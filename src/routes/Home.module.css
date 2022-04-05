@@ -1,0 +1,37 @@
+.Home {
+    min-height: 500px;
+}
+
+.anything {
+    height: 500px;
+    background-color: green;
+    margin-bottom: 100px;
+    border-radius: 10px;
+}
+
+.Home h2 {
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.2);
+    line-height: 1.5;
+    font-size: 24px;
+}
+
+.hot_content {
+    display: flex;
+    height: 500px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+/* .list_container {
+    height: 100%;
+} */
+
+.hot_content .list {
+    width: 630px;
+    height: 440px;
+}
+
+.category { 
+    min-height: 500px;
+}

@@ -1,0 +1,141 @@
+@keyframes move_header {
+    from {
+        height: 0;
+    }
+
+    to {
+        height: 66px;
+    }
+}
+
+.h_body {
+    background-color: #333333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 66px;
+    padding: 0 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    border-radius: 0 0 10px 10px;
+    animation-name: move_header;
+    animation-duration: 1s;
+    z-index: 2;
+}
+
+.h_body ::before {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    background-color: gray;
+}
+
+.h_body .menuList {
+    flex-grow: 1;
+    display: flex;
+}
+
+.h_body .home {
+    margin-right: 50px;
+}
+
+.h_body a {
+    color: white;
+}
+
+.h_body .slideItem a {
+    color: #333333;
+}
+
+.h_body .slide {
+    display: flex;
+    align-items: center;
+    height: 66px;
+}
+
+.h_body .h_list {
+    margin-right: 40px;
+    animation-delay: 0.6s;
+    animation-fill-mode: both; 
+}
+
+.h_body .h_list:nth-last-child(1){
+    margin-right: 0;
+}
+
+.h_body .ect {
+    position: relative;
+    right: 0px;
+    width: 40px;
+    height: 40px;
+    background-image: url("/src/img/icon/menu.svg");
+    background-size: cover;
+}
+
+/* .h_body .ect:hover .slide{
+    height: 66px;
+} */
+
+.h_body .ect .slide {
+    position: fixed;
+    top: 66px;
+    height: 0;
+    overflow: hidden;
+    color: red;
+    transition: 0.2s;
+}
+
+.h_body .ect .slide li {
+    background-color: blue;
+}
+
+.slideItem {
+    /* overflow: hidden; */
+    position: fixed;
+    top: 60px;
+    /* left: 0; */
+    width: 100%;
+    padding-top: 0;
+    padding-left: 180px;
+    /* transition: 0s; */
+}
+
+.slideItem li {
+    height: 0;
+    overflow: hidden;
+    /* transition: 0.2s; */
+}
+
+/* .h_body:hover ~ .menuSlide {
+    padding: 20px 40px 20px 90px;
+    height: 100px;
+} */
+
+.slide:hover .slideItem {
+    padding-top: 26px;
+}
+
+.slide:hover .slideItem li{
+    height: 30px;
+    transition: 0.2s;
+}
+
+.menuSlide {
+    height: 0;
+    overflow: hidden;
+    position: fixed;
+    padding: 0px 40px;
+    z-index: 1;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    background-color: #f1f1f1;
+    transition: 0.3s;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.2);
+}

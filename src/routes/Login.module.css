@@ -1,0 +1,53 @@
+.login {
+    display: flex;
+    justify-content: center;
+}
+
+.label_div {
+    margin-top: 10px;
+}
+
+.notice {
+    color: #7863FF;
+}
+
+.login_box {
+    margin-top: 100px;
+    width: 330px;
+    padding: 50px;
+    display: block;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: #fefefe;
+}
+
+.id, .pw, .login_box button {
+    width: 100%;
+    display: block;
+}
+
+.save_id {
+    display: inline-block;
+    width: 18px;
+}
+
+.id, .pw{
+    font-size: 22px;
+    line-height: 2;
+    border: none;
+    border-bottom: 1px solid black;
+    margin-bottom: 10px;
+}
+
+.button_div {
+    margin-top: 60px;
+}
+
+._button {
+    margin-bottom: 10px;
+    height: 50px;
+    font-size: 24px;
+    border: none;
+    background-color: #333333;
+    color: #f2f2f2;
+}
