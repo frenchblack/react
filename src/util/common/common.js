@@ -15,3 +15,12 @@ export const onChange = (e, setter, func, funcObj) => {
         func(e, funcObj);
     }
 }
+
+//체크박스 change
+export const onChkChange = (e, setter, func, funcObj) => {
+    setter(e.target.checked);
+    
+    if( !cosIsNull(func) ) {
+        func(e, funcObj);
+    }
+}

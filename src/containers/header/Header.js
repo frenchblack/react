@@ -1,12 +1,18 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import { Link } from "react-router-dom"
 import styles from  "./Header.module.css";
 import axios from "axios";
+import { useCookies } from "react-cookie";
+import { AuthContext } from "util"; 
 
 function Header() {
     const [MenuList, setMenuList] = useState([]);
+    
     const slideRef = useRef();
-
+    const [cookis,setCookie, removeCookie] = useCookies("Authorization"); 
+    const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
+ 
+    //메뉴 리스트 불러오기
     const getMenuList = async() => {
         try {
             const menu = await axios.get("http://localhost:8080/getMenuList");
@@ -16,6 +22,14 @@ function Header() {
         }
     }
 
+    //로그아웃
+    const logoutOnClick = () => {
+        removeCookie("Authorization");
+        _setIsAuthorizationHandler(false);
+        axios.defaults.headers.common["Authorization"] = ``;
+    }
+
+    //슬라이더 드랍
     const meneMouseenter = (h) => {
         slideRef.current.style.height = h;
     }
@@ -25,7 +39,11 @@ function Header() {
     }
 
     useEffect(() => {
-        getMenuList();
+        getMenuList(); 
+
+        if ( cookis.Authorization != undefined ) {
+            _setIsAuthorizationHandler(true);
+        }
     }, [])
 
     return (
@@ -50,11 +68,20 @@ function Header() {
                 </div>
                 <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("160px") } } onMouseLeave={ meneMouseleave } >
                     <div className={ styles.ect }></div>
-                    <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
-                        <li><Link to="/login">로그인</Link></li>
-                        <li><Link to="/join">회원가입</Link></li>
-                        <li>설정</li>
-                    </ul>
+                    { _isAuthorization ? (
+                        <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
+                            <li>프로필</li>
+                            <li onClick={ logoutOnClick }>로그아웃</li>
+                            <li>내 블로그</li>
+                        </ul>
+                    ) : (
+                        <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
+                            <li><Link to="/login">로그인</Link></li>
+                            <li><Link to="/join">회원가입</Link></li>
+                            <li>설정</li>
+                        </ul>
+                    ) }
+
                 </div>
             </ul>
             <div className={ styles.menuSlide } ref={ slideRef }>

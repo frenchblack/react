@@ -1,12 +1,14 @@
-import { useState } from "react";
-import { event_prevent, onChange, cosIsNull } from "util"
+import { useState, useEffect, useContext } from "react";
+import { event_prevent, onChange, onChkChange, cosIsNull, AuthContext } from "util"
 import { Link, useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
 import styles from "./Login.module.css";
 import axios from "axios";
 
 function Login() {
     const [id, setId] = useState("");
     const [pw, setPw] = useState("");
+    const [saveId, setSaveId] = useState(false);
     const [loginLabel, setLoginLabel] = useState("");
 
     const [isId, setisId] = useState(false);
@@ -14,48 +16,48 @@ function Login() {
     
     const navigator = useNavigate();
 
+    const [cookies, setCookie, removeCookie] = useCookies(["Authorization"]);
+    const { _setIsAuthorizationHandler } = useContext(AuthContext);
 
+    useEffect(() => {
+        if ( cookies.saveId != undefined ) {
+            setId(cookies.saveId);
+            setSaveId(true);
+            setisId(true);
+        }
+    },[]);
+
+    //로그인
     const submitHandler = async (event) => {
-        event_prevent(event)
-
+        event_prevent(event)  
+ 
         let result;
         let boby = {
             user_id : id
             , user_pw : pw
         };
-
-
         
         try {
-            result = await axios.post("http://localhost:8080/authenticate", boby);
-            console.log("aaa" + result);
-            console.log(result);
-            // alert("회원가입이 완료되었습니다.");
-            // navigator("/login");
-            console.log(result.data.token);
+            result = await axios.post("http://localhost:8080/login", boby);
 
-            let token = `Bearer ${result.data.token}`;
-            let eAxios = axios.create({
-                baseURL: '',
-                headers: {
-                    Authorization : token
-                }
-            });;
-            result = await eAxios.get("http://localhost:8080/getUserMenu?user_id=aaa");
-            console.log(result);
+            setCookie("Authorization", `Bearer ${result.data.token}`, { maxAge : 60, httpOnly : true});
+            _setIsAuthorizationHandler(true);
+            axios.defaults.headers.common["Authorization"] = `Bearer ${result.data.token}`;
+            if ( saveId ) {
+                setCookie("saveId", id, { maxAge : (60 * 60 * 24 * 30) });
+            } else {
+                removeCookie("saveId");
+            }
+            navigator("/");
+
+            // result = await axios.get("http://localhost:8080/getUserMenu?user_id=aaa");
         } catch(e) {
+            setLoginLabel(e.response.data.message);
             // alert(e.response.data.message);
-            console.log(e);
-        }
-
-        try {
-            
-            console.log(result); 
-        } catch(e) {
-            
         }
     } 
 
+    //ID 변경
     const idOnChange = (e) => {
         if ( cosIsNull(e.target.value) ) {
             setisId(false);
@@ -64,6 +66,7 @@ function Login() {
         }
     }
 
+    //PW 변경
     const pWOnChange = (e) => {        
         if ( cosIsNull(e.target.value) ) {
             setIsPw(false);
@@ -72,7 +75,8 @@ function Login() {
         }
     }
 
-    const moveJoin = () => {
+    //회원가입 클릭
+    const joinOnClick = () => {
         navigator("/join");
     }
 
@@ -81,13 +85,13 @@ function Login() {
             <form className={ styles.login_box } onSubmit={ submitHandler }>
                 <input spellCheck="false" className={ styles.id } placeholder='아이디' value={ id } onChange={ (e) => onChange(e, setId, idOnChange) } />
                 <input type="password" className={ styles.pw } placeholder='비밀번호' value={ pw } onChange={ (e) => onChange(e, setPw, pWOnChange) } />
-                <label><input type="checkbox" className={ styles.save_id } />아이디 저장</label>
+                <label><input type="checkbox" className={ styles.save_id } checked={ saveId } onChange={ (e) => onChkChange(e, setSaveId) }/>아이디 저장</label>
                 <div className={ styles.label_div }>
                     <label className={ styles.notice }>{ loginLabel }</label>
                 </div>
                 <div className={ styles.button_div }>
                     <button type="submit" className={ styles._button } disabled={ ( isId && isPw ) ? false : true } >로그인</button>
-                    <button type="button" className={ styles._button } onClick={ moveJoin }>회원가입</button>
+                    <button type="button" className={ styles._button } onClick={ joinOnClick }>회원가입</button>
                 </div>
             </form>
         </div>
