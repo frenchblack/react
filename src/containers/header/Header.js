@@ -1,21 +1,18 @@
 import { useEffect, useState, useRef, useContext } from 'react';
 import { Link } from "react-router-dom"
 import styles from  "./Header.module.css";
-import axios from "axios";
-import { useCookies } from "react-cookie";
-import { AuthContext } from "util"; 
+import { AuthContext, cusAxios, getCookie, setCookie, removeCookie } from "util"; 
 
 function Header() {
     const [MenuList, setMenuList] = useState([]);
     
     const slideRef = useRef();
-    const [cookis,setCookie, removeCookie] = useCookies("Authorization"); 
-    const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
+    const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext); 
  
     //메뉴 리스트 불러오기
     const getMenuList = async() => {
         try {
-            const menu = await axios.get("http://localhost:8080/getMenuList");
+            const menu = await cusAxios.get("http://localhost:8080/getMenuList");
             setMenuList(menu.data);
         } catch(e) {
 
@@ -24,9 +21,10 @@ function Header() {
 
     //로그아웃
     const logoutOnClick = () => {
-        removeCookie("Authorization");
-        _setIsAuthorizationHandler(false);
-        axios.defaults.headers.common["Authorization"] = ``;
+        removeCookie("Authorization"); 
+        removeCookie("Refresh");
+        _setIsAuthorizationHandler(false); 
+        cusAxios.defaults.headers.common["Authorization"] = ``;
     }
 
     //슬라이더 드랍
@@ -34,17 +32,32 @@ function Header() {
         slideRef.current.style.height = h;
     }
 
-    const meneMouseleave = () => {
+    const meneMouseleave = () => { 
         slideRef.current.style.height = "0";
     }
-
+ 
     useEffect(() => {
         getMenuList(); 
 
-        if ( cookis.Authorization != undefined ) {
+        if ( getCookie("Authorization") != undefined ) { 
             _setIsAuthorizationHandler(true);
         }
     }, [])
+
+
+    //test
+    const testFuction = async () => {
+        try {
+            const test = await cusAxios.get("http://localhost:8080/getUserMenu?user_id=aaa"); 
+            console.log(cusAxios.defaults.headers.common);    
+            console.log(getCookie("Authorization"));  
+            console.log(getCookie("Refresh"));   
+            console.log(test.data);    
+        } catch(e) {
+            console.log(e);
+            // console.log(e.response.data);  
+        }
+    }
 
     return (
         <div>
@@ -72,7 +85,7 @@ function Header() {
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
                             <li>프로필</li>
                             <li onClick={ logoutOnClick }>로그아웃</li>
-                            <li>내 블로그</li>
+                            <li onClick={ testFuction }>내 블로그</li>
                         </ul>
                     ) : (
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
