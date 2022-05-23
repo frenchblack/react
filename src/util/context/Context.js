@@ -6,7 +6,7 @@ export const AuthContext = createContext({
 });
 
 const AuthContextProvider = ({ children }) => {
-    const [_isAuthorization, setIsAuth] = useState('');
+    const [_isAuthorization, setIsAuth] = useState(false);
 
     const _setIsAuthorizationHandler = (_isAuthorization) => setIsAuth(_isAuthorization);
 
@@ -18,3 +18,5 @@ const AuthContextProvider = ({ children }) => {
 }
 
 export {AuthContextProvider};
+
+

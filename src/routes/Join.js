@@ -1,7 +1,7 @@
 import styles from "./Join.module.css"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { onChange, event_prevent, cosIsNull, cusAxios } from "util"
+import { onChange, event_prevent, cosIsNull, nonAuthPost } from "util"
 
 function Join() {
     const [id, setId] = useState("");
@@ -36,11 +36,11 @@ function Join() {
         };
 
         try {
-            result = await cusAxios.post("http://localhost:8080/signup", boby);
+            result = await nonAuthPost("http://localhost:8080/signup", boby);
             alert("회원가입이 완료되었습니다.");
             navigator("/login");
         } catch(e) {
-            console.log(e);
+
         }
         
     }
@@ -58,7 +58,7 @@ function Join() {
         }
 
         try {
-            result = await cusAxios.post("http://localhost:8080/checkId", boby);
+            result = await nonAuthPost("http://localhost:8080/checkId", boby);
 
             if ( result.data.result == 0) {
                 setIdLabel("사용가능한 아이디입니다.");
@@ -68,7 +68,6 @@ function Join() {
             }
             
         } catch(e) {
-            console.log(e);
         }
     }
 

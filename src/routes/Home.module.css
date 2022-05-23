@@ -4,7 +4,7 @@
 
 .anything {
     height: 500px;
-    background-color: green;
+    background-color: rgba(0, 0, 0, 0.08);
     margin-bottom: 100px;
     border-radius: 10px;
 }

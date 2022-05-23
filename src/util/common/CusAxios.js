@@ -1,6 +1,7 @@
 import axios from "axios";
-import { getCookie, setCookie, setCookieAccessToken, setCookieRefreshToken } from "util/common/Cookies"
+import { getCookie, setCookie, setCookieAccessToken, setCookieRefreshToken } from "util/common/Cookies";
 
+//axios 인스턴스
 export const cusAxios = axios.create({
     baseURL : ''
     , headers : {
@@ -16,10 +17,20 @@ let refreshSubscribers = [];
 
 const onTokenRefreshed = (accessToken) => {
     refreshSubscribers.map((callback) => callback(accessToken));
+
+    delRefreshSubscribers();
 }
 
 const addRefreshSubscriber = (callback) => {
     refreshSubscribers.push(callback);
+}
+
+const delRefreshSubscribers = () => {
+    refreshSubscribers = [];
+}
+
+const expirationAuth = () => {
+    
 }
 
 //커스텀 Axios response 인터셉터
@@ -35,19 +46,21 @@ cusAxios.interceptors.response.use(
         } = error;
         const originRequest = config;
 
-        if ( status === 401 ) {
+        
+        if ( status === 433 ) {
             if ( true ) { //if ( error.response.data.code === 401 ) {
                 if ( !isTokenRefreshing ) {
                     isTokenRefreshing = true;
 
                     //refresh토큰으로 토큰갱신
                     const refreshToken = getCookie("Refresh");
-                    console.log("refreshToken" + refreshToken);
+                    let userContext = localStorage.getItem('user_id');
+                   
                     const { data } = await cusAxios.post(
                         "http://localhost:8080/refresh"
                         , { 
                             "Refresh" : refreshToken || "wqwq"
-                            , "User" : "AAA"
+                            , "User" :  userContext || "not exist context _UserId"
                         }
                     );
 
@@ -59,21 +72,25 @@ cusAxios.interceptors.response.use(
                     isTokenRefreshing = false;
 
                     cusAxios.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+                    originRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
                     
                     //지연된 요청 진행
                     onTokenRefreshed(newAccessToken);
-                }
 
-                const retryOriginalRequest = new Promise((resolve) => {
-                    addRefreshSubscriber((accessToken) => {
-                        originRequest.headers.Authorization = "Bearer " + accessToken;
-                        resolve(axios(originRequest));
+                    return axios(originRequest);
+                } else {
+                    const retryOriginalRequest = new Promise((resolve) => {
+                        addRefreshSubscriber((accessToken) => {
+                            originRequest.headers.Authorization = "Bearer " + accessToken;
+                            resolve(axios(originRequest));
+                        });
                     });
-                });
-
-                return retryOriginalRequest;
+    
+                    return retryOriginalRequest;
+                }
             }
         }
+        delRefreshSubscribers();
         return Promise.reject(error);
     }
 );

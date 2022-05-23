@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { event_prevent, onChange, onChkChange, cosIsNull, AuthContext, cusAxios, getCookie, setCookie, removeCookie, setCookieAccessToken, setCookieRefreshToken } from "util"
+import { event_prevent, onChange, onChkChange, cosIsNull, AuthContext, cusAxios, nonAuthPost, getCookie, setCookie, removeCookie, setCookieAccessToken, setCookieRefreshToken } from "util"
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 
@@ -17,7 +17,6 @@ function Login() {
     const { _setIsAuthorizationHandler } = useContext(AuthContext);
 
     useEffect(() => {
-        console.log();
         if ( getCookie("saveId") != undefined ) {
             setId(getCookie("saveId"));
             setSaveId(true);
@@ -30,17 +29,18 @@ function Login() {
         event_prevent(event)  
  
         let result;
-        let boby = {
+        let body = {
             user_id : id
             , user_pw : pw
         };
         
         try {
-            result = await cusAxios.post("http://localhost:8080/login", boby);
+            result = await nonAuthPost("http://localhost:8080/login", body);
 
             setCookieAccessToken(result.data.token);
             setCookieRefreshToken(result.data.refreshtoken);
             _setIsAuthorizationHandler(true);
+            localStorage.setItem('user_id', body.user_id);
             cusAxios.defaults.headers.common["Authorization"] = `Bearer ${result.data.token}`; 
             if ( saveId ) {
                 setCookie("saveId", id, { maxAge : (60 * 60 * 24 * 30) });
@@ -51,7 +51,7 @@ function Login() {
 
             // result = await axios.get("http://localhost:8080/getUserMenu?user_id=aaa");
         } catch(e) {
-            setLoginLabel(e.response.data.message);
+            setLoginLabel(e.response.data.message); 
             // alert(e.response.data.message);
         }
     } 
