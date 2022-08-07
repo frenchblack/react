@@ -15,9 +15,9 @@ export const removeCookie = (name, options) => {
 }
 
 export const setCookieAccessToken = (token) => {
-	setCookie("Authorization", `Bearer ${token}`, { maxAge : 60 * 5}); //httpOnly : true
+	setCookie("Authorization", `Bearer ${token}`, { maxAge : 30 * 60 }); //httpOnly : true
 }
 
 export const setCookieRefreshToken = (token) => {
-	setCookie("Refresh", `Bearer ${token}`, { maxAge : 60 * 5}); //httpOnly : true
+	setCookie("Refresh", `Bearer ${token}`, { maxAge : 30 * 24 * 60 * 60 }); //httpOnly : true
 }

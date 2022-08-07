@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useContext } from 'react';
 import { Link, useNavigate } from "react-router-dom"
 import styles from  "./Header.module.css";
-import { AuthContext, getCookie, setCookie, removeCookie, nonAuthGet, authGet, comm_logout } from "util"; 
+import { AuthContext, getCookie, nonAuthGet, authGet, comm_logout } from "util"; 
 
 function Header() {
     const [MenuList, setMenuList] = useState([]);
@@ -24,6 +24,10 @@ function Header() {
     //로그아웃
     const logoutOnClick = async () => {
         comm_logout(_setIsAuthorizationHandler);
+        
+        alert("로그아웃 되었습니다.");
+
+        navigator("/login");
     }
 
     //슬라이더 드랍
@@ -44,9 +48,11 @@ function Header() {
     }, [])
 
     //test
-    const testFuction = async () => {
-        authGet("http://localhost:8080/getUserMenu?user_id=aaa", _setIsAuthorizationHandler, navigator);
-    }
+    // const testFuction = async () => {
+        
+        
+    //     // authGet("http://localhost:8080/blog/" + localStorage.getItem("user_id"), _setIsAuthorizationHandler, navigator);
+    // }
 
     return (
         <div>
@@ -74,7 +80,7 @@ function Header() {
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
                             <li>프로필</li>
                             <li onClick={ logoutOnClick }>로그아웃</li>
-                            <li onClick={ testFuction }>내 블로그</li>
+                            <li><Link to={ "/blog/" + localStorage.getItem("user_id") }>내 블로그</Link></li>
                         </ul>
                     ) : (
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
