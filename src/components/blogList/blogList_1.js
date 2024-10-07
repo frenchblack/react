@@ -2,7 +2,7 @@ import styles from  "./blogList_1.module.css";
 import { useState, useEffect, useRef } from "react"
 
 function BlogList_1() {
-    //aa
+    //된거여 뭐여
     const [list, setList] = useState([]);
     const [detail, setDetail] = useState({});
     const testList = () => {
