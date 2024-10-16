@@ -6,6 +6,7 @@ import Join from "routes/Join"
 import Blog from "routes/Blog";
 import HeaderRoute from "routes/HeaderRoute";
 import BlogRoute from "routes/BlogRoute";
+import Menu from "routes/Menu";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={ <Home /> } />
           <Route path="/login" element={ <Login /> } />
           <Route path="/join" element={ <Join /> } />
+          <Route path="/menu" element={ <Menu /> } />
         </Route>
         <Route path="/blog/*" element={ <BlogRoute /> } >
             <Route path=":bloger_id" element={ <Blog /> } />

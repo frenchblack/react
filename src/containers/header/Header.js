@@ -63,7 +63,7 @@ function Header() {
                 <div className={ styles.menuList }>
                     {MenuList.map((menu) => ( 
                         <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("200px") } } onMouseLeave={ meneMouseleave } >
-                            <li className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to="/">{ menu.menu_nm }</Link></h4></li>
+                            <li key={ menu.menu_cd } className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to="/">{ menu.menu_nm }</Link></h4></li>
                             <ul style={{left: "0" } }className={ styles.slideItem }>
                                 <li>자유게시판</li>
                                 <li>자유게시판</li>
@@ -81,6 +81,7 @@ function Header() {
                             <li>프로필</li>
                             <li onClick={ logoutOnClick }>로그아웃</li>
                             <li><Link to={ "/blog/" + localStorage.getItem("user_id") }>내 블로그</Link></li>
+                            <li><Link to="/menu">메뉴관리</Link></li>
                         </ul>
                     ) : (
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>

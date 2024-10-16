@@ -1,0 +1,9 @@
+.Home {
+    margin-top: 50px;
+    min-height: 500px;
+}
+
+.menu_nm {
+    border-bottom: 1px solid black;
+    padding-bottom: 10px;
+}
