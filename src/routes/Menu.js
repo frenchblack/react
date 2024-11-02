@@ -16,6 +16,8 @@ function Menu() {
         // const menu = await nonAuthGet("http://localhost:8080/getManageMenuList");
         setMenuList(menu.data);
         console.log("getMenuList");
+        console.log(menu.data);
+        console.log("menuList");
         console.log(menuList);
     } catch(e) {
 
@@ -37,7 +39,7 @@ function Menu() {
         메뉴관리
       </h1>
       <div>
-
+        
       </div>
   
     </div>
