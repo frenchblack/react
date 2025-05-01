@@ -1,5 +1,5 @@
 import axios from "axios";
-import { removeCookie } from "util/common/Cookies";
+import { getCookie, removeCookie } from "util/common/Cookies";
 import { cusAxios } from "util/common/CusAxios";
 
 export const event_prevent= (event) => {
@@ -43,18 +43,35 @@ export const comm_logout = ( setContext ) => {
     cusAxios.defaults.headers.common["Authorization"] = ``;
 }
 
+//새로고침등으로 헤더가 사라졌을 시 쿠키에 토큰이 남아있다면 헤더에 추가.
+const chkAuthorization = () => {
+    if(getCookie("Authorization") != null) {
+        cusAxios.defaults.headers.common["Authorization"] = getCookie("Authorization");
+    }
+}
+
 //인증 get
 export const authGet = async (uri, setContext, navi) => {
     let result;
+    chkAuthorization();
     try {
         result = await cusAxios.get(uri); 
     } catch(e) {
-        if (e.response.data.code != 433) {
-            comm_logout( setContext );
+        //433이 엑세스토큰 만료 에러, 인증되지 않은 사용자 접근은 에러코드 401암 
+        if (e.response.data.status != 433) {
+            if (e.response.data.status == 401) {
+                comm_logout( setContext );
 
-            alert("비밀번호가 만료되었습니다.");
+                alert("접근 권한이 없습니다.");
 
-            navi("/login");
+                navi("/login");
+            } else { 
+                comm_logout( setContext );
+
+                alert("비밀번호가 만료되었습니다.");
+
+                navi("/login");
+            }
         }
         throw e;
     }
@@ -64,6 +81,7 @@ export const authGet = async (uri, setContext, navi) => {
 
 //인증 post
 export const authPost = async (uri, body, setContext, navi) => {
+    chkAuthorization();
     let result;
     try {
         result = await cusAxios.post(uri, body); 

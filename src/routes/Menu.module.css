@@ -7,3 +7,82 @@
     border-bottom: 1px solid black;
     padding-bottom: 10px;
 }
+
+.munu_container {
+    display: flex;
+    margin-top: 20px;
+    border-radius: 10px;
+    min-height: 500px;
+}
+
+.grind_div {
+    flex : 1;
+    background-color: #f0f0f0;
+    margin-top: 20px;
+    margin-right: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px; 
+}
+
+.header_div {
+    display: flex;
+    width: 100%;
+    border : 1px #a9bae3 solid;
+    border-radius: 10px 10px 0 0;
+}
+
+.header {
+    display: initial;
+    border-right: 1px black solid;
+    padding: 5px;
+    font-size: 22px;
+    background-color: #a9bae3;
+    text-align: center;
+    color: #888888;
+}
+
+.grid_ul {
+
+    /* height: 800px; */
+}
+
+.menuItem {
+    display: flex;
+    width: 100%;
+    /* border: 1px black solid;
+    padding: 5px;
+    background-color: white; */
+    cursor: pointer;
+}
+
+.item {
+    border: 1px black solid;
+    background-color: white;
+}
+
+.item1 {
+    flex : 1;
+}
+
+.item2 {
+    flex : 2;
+}
+
+.item3 {
+    flex : 1;
+}
+
+.detail {
+    flex : 2;
+    margin-top: 20px;
+    background-color: white;    
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.detailItem_div {
+    display: flex;
+}
+
+.detailItem {
+}
