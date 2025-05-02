@@ -16,7 +16,7 @@
 }
 
 .grind_div {
-    flex : 1;
+    flex : 2;
     background-color: #f0f0f0;
     margin-top: 20px;
     margin-right: 20px;
@@ -33,12 +33,21 @@
 
 .header {
     display: initial;
-    border-right: 1px black solid;
+    /* border-right: 1px white solid; */
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 1);
     padding: 5px;
     font-size: 22px;
     background-color: #a9bae3;
     text-align: center;
-    color: #888888;
+    color: white;
+}
+
+.header_div .item1{
+    border-radius: 10px 0 0 0;
+}
+
+.header_div .item3{
+    border-radius: 0 10px 0 0;
 }
 
 .grid_ul {
@@ -55,10 +64,34 @@
     cursor: pointer;
 }
 
+
+
 .item {
-    border: 1px black solid;
+    /* border: 1px black solid; */
     background-color: white;
+    text-align: center;
+    padding : 3px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px rgba(0, 0, 0, 0.1) solid;
 }
+
+.menuItem:hover .item{
+    background-color: #f6f6f6 ;
+}
+
+.innerItem {
+    text-align: left;
+}
+
+/* .innerItem::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 10px;
+    height: 1px;
+    background-color: black;
+  } */
 
 .item1 {
     flex : 1;
@@ -72,17 +105,49 @@
     flex : 1;
 }
 
+
+.treeLevel1 {
+    margin-left: 10px;
+  }
+  
+.treeLevel2 {
+    margin-left: 30px;
+}
+  
+.treeLevel3 {
+    margin-left: 50px;
+}
+
 .detail {
-    flex : 2;
+    flex : 1;
     margin-top: 20px;
-    background-color: white;    
+    background-color: white;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #a9bae3;
+}
+
+.detail_nm {
+    border-radius: 10px 10px 0 0;
+    padding-top : 10px;
+    background-color: #a9bae3;
+    color: white;
+    text-align: center;
 }
 
 .detailItem_div {
     display: flex;
 }
 
+.detailItem_heder{
+    font-size: 20px;
+    flex:1;
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+    border-bottom: 1px white solid;
+}
 .detailItem {
+    padding-left: 10px;
+    flex: 2;
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+    /* border-bottom: 1px rgba(0, 0, 0, 0.1) solid; */
 }

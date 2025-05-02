@@ -55,29 +55,38 @@ cusAxios.interceptors.response.use(
                     //refresh토큰으로 토큰갱신
                     const refreshToken = getCookie("Refresh");
                     let userContext = localStorage.getItem('user_id');
-                   
-                    const { data } = await cusAxios.post(
-                        "http://localhost:8080/refresh"
-                        , { 
-                            "Refresh" : refreshToken || "wqwq"
-                            , "User" :  userContext || "not exist context _UserId"
-                        }
-                    );
 
-                    const { token : newAccessToken, refreshtoken : newRefreshToken } = data;
-                    
-                    setCookieAccessToken(newAccessToken);
-                    setCookieRefreshToken(newRefreshToken);
+                    //요청 중 오류로 인해 isTokenRefreshing이 false로 돌아가지 못하는 상황을 방지하기위해 예외처리
+                    try {
+                        const { data } = await cusAxios.post(
+                            "http://localhost:8080/refresh"
+                            , { 
+                                "Refresh" : refreshToken || "wqwq"
+                                , "User" :  userContext || "not exist context _UserId"
+                            }
+                        );
+                        const { token : newAccessToken, refreshtoken : newRefreshToken } = data;
+                        
+                        setCookieAccessToken(newAccessToken);
+                        setCookieRefreshToken(newRefreshToken);
 
-                    isTokenRefreshing = false;
+                        
 
-                    cusAxios.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
-                    originRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-                    
-                    //지연된 요청 진행
-                    onTokenRefreshed(newAccessToken);
+                        cusAxios.defaults.headers.common["Authorization"] = `Bearer ${newAccessToken}`;
+                        originRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
 
-                    return axios(originRequest);
+                        isTokenRefreshing = false;
+
+                        //지연된 요청 진행
+                        onTokenRefreshed(newAccessToken);
+                        return axios(originRequest);
+                    } catch (e) {
+                        console.error("토큰 갱신 실패:", e);
+                        return Promise.reject(e);
+                    } finally {
+                        // 무조건 false로 되돌리기
+                        isTokenRefreshing = false;
+                    }
                 } else {
                     const retryOriginalRequest = new Promise((resolve) => {
                         addRefreshSubscriber((accessToken) => {
