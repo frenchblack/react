@@ -65,12 +65,14 @@ export const authGet = async (uri, setContext, navi) => {
                 alert("접근 권한이 없습니다.");
 
                 navi("/login");
-            } else { 
+            } else if(e.response.data.status >400 && e.response.data.status < 500) { 
                 comm_logout( setContext );
 
                 alert("비밀번호가 만료되었습니다.");
 
                 navi("/login");
+            } else if(e.response.data.status > 500) {
+                alert("서버에서 오류가 발생하였습니다.");
             }
         }
         throw e;
@@ -86,12 +88,20 @@ export const authPost = async (uri, body, setContext, navi) => {
     try {
         result = await cusAxios.post(uri, body); 
     } catch(e) {
-        if (e.response.data.code != 433) {
+        if (e.response.data.status == 401) {
+            comm_logout( setContext );
+
+            alert("접근 권한이 없습니다.");
+
+            navi("/login");
+        } else if(e.response.data.status >400 && e.response.data.status < 500) { 
             comm_logout( setContext );
 
             alert("비밀번호가 만료되었습니다.");
 
             navi("/login");
+        } else if(e.response.data.status > 500) {
+            alert("서버에서 오류가 발생하였습니다.");
         }
         throw e;
     }
