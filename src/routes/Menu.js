@@ -1,38 +1,40 @@
 import { useEffect, useState, useContext, useRef } from 'react';
 import styles from "./Menu.module.css";
 import { useNavigate } from "react-router-dom"
-import { AuthContext ,authGet, authPost ,nonAuthGet ,getCookie } from "util"
+import { AuthContext ,authGet, authPost, authPut ,authDelete ,nonAuthGet ,getCookie } from "util"
 import { Modal, Confirm } from 'components';
 
 function Menu() {
   const [menuList, setMenuList] = useState([]);
   const [selectMenu, setSelectMenu] = useState(null); //현재 선택된 메뉴
   const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
-  const [guideText, setGuideText]= useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [clickedCreate, setClickedCreate] = useState(false);
+  const [clickedDelete, setClickedDelete] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(() => {});
 
   //상세메뉴 객체
   const [formData, setFormData] = useState({
-      menu_cd: ''
-    , menu_nm: ''
+      menu_cd: null
+    , menu_nm: null
     , menu_lvl: 3
     , p_cd: null
     , s_ord: 9
     , use_yn: false
-    , etc: ''
+    , etc: null
   });
 
   //생성용 객체
   const [createData, setCreateData] = useState({
-      menu_cd: ''
-    , menu_nm: ''
+      menu_cd: null
+    , menu_nm: null
     , menu_lvl: 1
     , p_cd: null
     , s_ord: 9
     , use_yn: true
-    , etc: ''
+    , etc: null
   });
 
   const navigator = useNavigate();
@@ -59,6 +61,27 @@ function Menu() {
     }
   }
 
+  const putMenu = async () => {
+    try {
+      const post = await authPut("http://localhost:8080/putMenu", formData ,_setIsAuthorizationHandler ,navigator);
+      alert("메뉴 수정에 성공하였습니다.");
+    } catch(e) {
+      console.log(e);
+      alert("수정 중 오류가 발생하였습니다. 서버에 문의하세요.");
+    }
+  }
+
+  const deleteMenu = async (menu) => {
+    try {
+      const post = await authDelete("http://localhost:8080/deleteMenu", menu ,_setIsAuthorizationHandler ,navigator);
+      alert("메뉴 삭제에 성공하였습니다.");
+      setClickedDelete(false);
+    } catch(e) {
+      console.log(e);
+      alert("삭제 중 오류가 발생하였습니다. 서버에 문의하세요.");
+    }
+  }
+
   //페이지 접속 시 메뉴리스트불러옴
   useEffect(() => {
       getMenuList();
@@ -74,6 +97,48 @@ function Menu() {
     setIsModalOpen(true);
   }
 
+   //컨펌 create
+   const confirmOpen = (message, action) =>{
+    setConfirmMessage(message);
+    setConfirmAction(() => action); // 함수 저장
+    setIsConfirmOpen(true);
+  }
+
+  //필수 값 체크
+  const validateCreateData  = (data) =>{
+    if(!data.menu_cd || data.menu_cd.trim() === ''){
+      alert("메뉴 코드를 입력하세요.");
+      return true;
+    }
+    if(!data.menu_nm || data.menu_nm.trim() === ''){
+      alert("메뉴 명을 입력하세요.");
+      return true;
+    }
+    if(!data.s_ord){ //trim == 문자열 공백 제거
+      alert("정렬 순서를 입력하세요.");
+      return true;
+    }
+  }
+
+  //생성 액션
+  const actionCreate = async () => {
+    await postMenu();
+    getMenuList();
+  }
+  //수정 액션
+  const actionSave = async() => {
+    await putMenu();
+    getMenuList();
+  }
+  //삭제 액션
+  const actionDelete = async(menu) => {
+    await deleteMenu(menu);
+    getMenuList();
+  }  
+
+ ////////////////////////////////////////////////////////////////////////////
+ // 컴포넌트 event
+ //////////////////////////////////////////////////////////////////////////// 
   //메뉴 클릭시
   const handleMenuClick = (menu) => {
     setSelectMenu(menu);
@@ -84,19 +149,22 @@ function Menu() {
       //메뉴 레벨은 1~3
       if(menu.menu_lvl < 3){      
         setCreateData({
-            menu_cd: ''
-          , menu_nm: ''
+            menu_cd: null
+          , menu_nm: null
           , menu_lvl: (Number(menu.menu_lvl) + 1)
           , p_cd: menu.menu_cd
           , s_ord: 9
           , use_yn: true
-          , etc: ''
+          , etc: null
         });
         modalOnpen();
       } else {
         //레벨 3이상의 메뉴는 생성할 수 없습니다. 메세지 띄우기
         alert("레벨 3이상의 메뉴는 생성할 수 없습니다.");
       }
+    //삭제 버튼을 누른 상태라면
+    }else if(clickedDelete){
+      confirmOpen("삭제 하시겠습니까?", ()=>actionDelete(menu));
     }
   }
 
@@ -112,41 +180,53 @@ function Menu() {
     }
   };
 
-  //생성 버튼 클릭
+  //신규 버튼 클릭
   const onCreateBtn = (e) => {
     setClickedCreate(true);
-    setGuideText("생성할 메뉴의 상위코드를 선택 해 주세요.");
+    setClickedDelete(false);
+  }
+
+  //삭제 버튼 클릭
+  const onDeleteBtn = () => {
+    setClickedDelete(true);
+    setClickedCreate(false);
+  }
+
+  //저장 버튼 클릭
+  const onSaveBtn= () => {
+    //변경사항 있나 없나 체크
+    if(!Object.keys(formData).some(key => formData[key] !== selectMenu[key])) {
+      alert("변경사항이 없습니다.");
+      return;
+    }
+    if(validateCreateData(formData))return;
+
+    confirmOpen("저장 하시겠습니까?", actionSave);
   }
 
   //최상위 생성 버튼 onclick
   const lvl1btnOnClick = (e) => {
     //이전에 닫기 버튼 눌러서 쓰레기 데이터가 남아 있을 수 있으니 createData 초기화.
     setCreateData({
-        menu_cd: ''
-      , menu_nm: ''
+        menu_cd: null
+      , menu_nm: null
       , menu_lvl: 1
       , p_cd: null
       , s_ord: 9
       , use_yn: true
-      , etc: ''
+      , etc: null
     });
     modalOnpen();
   }
-
-  //모달 create 버튼
-  const createModalOnclick = () =>{
-    setIsConfirmOpen(true);
-  }
   
-  //모달 close버튼
-  const closeModalOnClick = () =>{
-    setIsModalOpen(false)
-  }
-
-  //컨펌 이벤트
-  const confirmOK = async () => {
-    await postMenu();
-    getMenuList();
+  const createModalOnClick = () => {
+    //중복 체크
+    if(validateCreateData(createData))return;
+    if(menuList.some((menu) => menu.menu_cd == createData.menu_cd)) {
+      alert("이미 존재하는 메뉴코드입니다. 다른 코드를 입력 해 주세요.");
+      return;
+    }
+    confirmOpen("생성 하시겠습니까?", actionCreate);
   }
 
   const confirmDeny = () => {
@@ -160,14 +240,15 @@ function Menu() {
       </h1>
       <div className={`${styles.top_div}`}>
         <div className={`${ styles.guide_div }`}>
-          <p style={{display : "inline"}}>{(clickedCreate?'생성할 메뉴의 상위코드를 선택 해 주세요.': "")}</p>
+          <p style={{display : "inline"}}>{(clickedCreate?'생성할 메뉴의 상위코드를 선택 해 주세요.': (clickedDelete? "삭제할 메뉴를 선태 해 주세요." : ""))}</p>
           {clickedCreate && <button style={{width : "120px"}} onClick={lvl1btnOnClick} >최상위 메뉴 생성</button>}
           {clickedCreate && <button style={{width : "120px"}} onClick={()=> setClickedCreate(false)} >생성 취소</button>}
+          {clickedDelete && <button style={{width : "120px"}} onClick={()=> setClickedDelete(false)} >삭제 취소</button>}
         </div>
         <div className = { `${styles.btn_div}` }>
           <button id="cerate_btn" onClick={onCreateBtn}>신규</button>
-          <button>저장</button>
-          <button>삭제</button>
+          <button onClick={onSaveBtn}>저장</button>
+          <button onClick={onDeleteBtn}>삭제</button>
         </div>
       </div>
       <div className={ styles.munu_container }>
@@ -203,7 +284,7 @@ function Menu() {
           <div>
             { selectMenu ? (  
               <div>
-                <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 코드</p><input className={ styles.detailItem } name="menu_cd" value={ formData.menu_cd || '' } onChange={handleChange}></input></div>
+                <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 코드</p><input readOnly={true} className={ styles.detailItem } name="menu_cd" value={ formData.menu_cd || '' } onChange={handleChange}></input></div>
                 <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 명</p><input className={ styles.detailItem} name="menu_nm" value={ formData.menu_nm || '' } onChange={handleChange} ></input></div>
                 <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 레벨</p><input readOnly={true} type="number" min="1" max="3"className={ styles.detailItem} name="menu_lvl" value={ formData.menu_lvl || 3 } onChange={handleChange} ></input></div>
                 <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>상위 코드</p><input readOnly={true} className={ styles.detailItem} name="p_cd" value={ formData.p_cd || '' } onChange={handleChange} ></input></div>
@@ -220,7 +301,7 @@ function Menu() {
       <Modal isOpen={isModalOpen} >
         <h2 className={ `${styles.menu_nm} ${ styles.detail_nm } `}>메뉴 생성</h2>
         <div style={{backgroundColor : "#a9bae3"}}>
-          <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 코드</p><input className={ styles.detailItem } name="menu_cd" value={ createData.menu_cd || '' } onChange={(e) => handleChange(e, setCreateData)}></input></div>
+          <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 코드</p><input className={ styles.detailItem } name="menu_cd" maxLength="8"value={ createData.menu_cd || '' } onChange={(e) => handleChange(e, setCreateData)}></input></div>
           <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 명</p><input className={ styles.detailItem} name="menu_nm" value={ createData.menu_nm || '' } onChange={(e) => handleChange(e, setCreateData)} ></input></div>
           <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>메뉴 레벨</p><input readOnly={true} type="number" min="1" max="3"className={ styles.detailItem} name="menu_lvl" value={ createData.menu_lvl || 3 } onChange={(e) => handleChange(e, setCreateData)} ></input></div>
           <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>상위 코드</p><input readOnly={true} className={ styles.detailItem} name="p_cd" value={ createData.p_cd || '' } onChange={(e) => handleChange(e, setCreateData)} ></input></div>
@@ -229,11 +310,11 @@ function Menu() {
           <div style ={ {height : '170px'} } className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>비고</p><textarea style = {{ fontSize : "15px"  }} className={ styles.detailItem } name="etc" value={ createData.etc || '' } onChange={(e) => handleChange(e, setCreateData)}></textarea></div>
         </div>  
         <div style={{ textAlign : 'center', marginTop : "20px" }}>
-          <button onClick={createModalOnclick}>생성</button>
-          <button onClick={closeModalOnClick}>닫기</button>
+          <button onClick={createModalOnClick}>생성</button>
+          <button onClick={()=>setIsModalOpen(false)}>닫기</button>
         </div>
       </Modal>
-      <Confirm isOpen={isConfirmOpen} onConfirm={confirmOK} onCancel={confirmDeny} onClose={()=>setIsConfirmOpen(false)} message={"메뉴를 생성 하시겠습니까?"}>
+      <Confirm isOpen={isConfirmOpen} onConfirm={confirmAction} onCancel={confirmDeny} onClose={()=>setIsConfirmOpen(false)} message={confirmMessage}>
       </Confirm>
     </div>
   );

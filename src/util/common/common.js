@@ -50,6 +50,26 @@ const chkAuthorization = () => {
     }
 }
 
+const controlErorr = (status, setContext, navi) => {
+    if (status != 433) {
+        if (status == 401) {
+            comm_logout( setContext );
+
+            alert("접근 권한이 없습니다.");
+
+            navi("/login");
+        } else if(status >400 && status < 500) { 
+            comm_logout( setContext );
+
+            alert("비밀번호가 만료되었습니다.");
+
+            navi("/login");
+        } else if(status > 500) {
+            alert("서버에서 오류가 발생하였습니다.");
+        }
+    }
+}
+
 //인증 get
 export const authGet = async (uri, setContext, navi) => {
     let result;
@@ -58,23 +78,7 @@ export const authGet = async (uri, setContext, navi) => {
         result = await cusAxios.get(uri); 
     } catch(e) {
         //433이 엑세스토큰 만료 에러, 인증되지 않은 사용자 접근은 에러코드 401암 
-        if (e.response.data.status != 433) {
-            if (e.response.data.status == 401) {
-                comm_logout( setContext );
-
-                alert("접근 권한이 없습니다.");
-
-                navi("/login");
-            } else if(e.response.data.status >400 && e.response.data.status < 500) { 
-                comm_logout( setContext );
-
-                alert("비밀번호가 만료되었습니다.");
-
-                navi("/login");
-            } else if(e.response.data.status > 500) {
-                alert("서버에서 오류가 발생하였습니다.");
-            }
-        }
+        controlErorr(e.response.data.status, setContext, navi);
         throw e;
     }
 
@@ -88,21 +92,35 @@ export const authPost = async (uri, body, setContext, navi) => {
     try {
         result = await cusAxios.post(uri, body); 
     } catch(e) {
-        if (e.response.data.status == 401) {
-            comm_logout( setContext );
+        controlErorr(e.response.data.status, setContext, navi);
+        throw e;
+    }
 
-            alert("접근 권한이 없습니다.");
+    return result;
+}
 
-            navi("/login");
-        } else if(e.response.data.status >400 && e.response.data.status < 500) { 
-            comm_logout( setContext );
+//인증 put
+export const authPut = async (uri, body, setContext, navi) => {
+    chkAuthorization();
+    let result;
+    try {
+        result = await cusAxios.put(uri, body); 
+    } catch(e) {
+        controlErorr(e.response.data.status, setContext, navi);
+        throw e;
+    }
 
-            alert("비밀번호가 만료되었습니다.");
+    return result;
+}
 
-            navi("/login");
-        } else if(e.response.data.status > 500) {
-            alert("서버에서 오류가 발생하였습니다.");
-        }
+//인증 put
+export const authDelete = async (uri, body, setContext, navi) => {
+    chkAuthorization();
+    let result;
+    try {
+        result = await cusAxios.delete(uri, { data : body}); 
+    } catch(e) {
+        controlErorr(e.response.data.status, setContext, navi);
         throw e;
     }
 
