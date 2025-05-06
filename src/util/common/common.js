@@ -71,11 +71,11 @@ const controlErorr = (status, setContext, navi) => {
 }
 
 //인증 get
-export const authGet = async (uri, setContext, navi) => {
+export const authGet = async (uri, setContext, navi, params) => {
     let result;
     chkAuthorization();
     try {
-        result = await cusAxios.get(uri); 
+        result = await cusAxios.get(uri, params); 
     } catch(e) {
         //433이 엑세스토큰 만료 에러, 인증되지 않은 사용자 접근은 에러코드 401암 
         controlErorr(e.response.data.status, setContext, navi);
@@ -128,11 +128,11 @@ export const authDelete = async (uri, body, setContext, navi) => {
 }
 
 //미인증 get
-export const nonAuthGet = async (uri) => {
+export const nonAuthGet = async (uri, params) => {
     let result;
 
     try {
-        result = await axios.get(uri);
+        result = await axios.get(uri, params);
     } catch(e) {
         throw e;
     }

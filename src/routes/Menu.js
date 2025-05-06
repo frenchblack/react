@@ -164,6 +164,10 @@ function Menu() {
       }
     //삭제 버튼을 누른 상태라면
     }else if(clickedDelete){
+      if(menuList.some((indexMenu) => indexMenu.p_cd == menu.menu_cd)){
+        alert("하위메뉴가 존재하여 삭제할 수 없습니다. 자식메뉴를 먼저 삭제 해 주세요.");
+        return;
+      }
       confirmOpen("삭제 하시겠습니까?", ()=>actionDelete(menu));
     }
   }

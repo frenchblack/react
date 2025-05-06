@@ -4,7 +4,9 @@ import styles from  "./Header.module.css";
 import { AuthContext, getCookie, nonAuthGet, authGet, comm_logout } from "util"; 
 
 function Header() {
-    const [MenuList, setMenuList] = useState([]);
+    const [menuList, setMenuList] = useState([]);
+    const [childMenuList, setChildMenuList] = useState([]);
+    
     
     const slideRef = useRef();
     const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
@@ -20,6 +22,47 @@ function Header() {
 
         }
     }
+
+    const getChildMenuList = async () => {
+        try {
+            const menu = await nonAuthGet("http://localhost:8080/getChildMenuList");
+            return menu.data;
+        } catch(e) {
+
+        }
+    }
+
+    useEffect(() => {
+        getMenuList(); 
+
+        if ( getCookie("Authorization") != undefined ) { 
+            _setIsAuthorizationHandler(true);
+        }
+    }, [])
+
+    useEffect(async() => {
+        const childObj = {};
+        const childList = await getChildMenuList();
+        console.log("childList : " + childList);
+        console.log(childList);
+        menuList
+          ?.forEach(menu => {
+            const parent = menu.menu_cd;
+            console.log("parent");
+            console.log(parent);
+            if (!childObj[parent]) {
+                childObj[parent] = [];
+            }
+
+            console.log(11);
+            childObj[parent].push(...childList?.filter((child)=>child.p_cd == parent));
+            console.log(22);
+          });
+        console.log("childObj : " + childObj);
+        console.log(childObj);
+        
+        setChildMenuList(childObj);
+      }, [menuList]);
 
     //로그아웃
     const logoutOnClick = async () => {
@@ -38,14 +81,7 @@ function Header() {
     const meneMouseleave = () => { 
         slideRef.current.style.height = "0";
     }
- 
-    useEffect(() => {
-        getMenuList(); 
 
-        if ( getCookie("Authorization") != undefined ) { 
-            _setIsAuthorizationHandler(true);
-        }
-    }, [])
 
     //test
     // const testFuction = async () => {
@@ -61,15 +97,16 @@ function Header() {
                     <Link to="/"><h1 className={ styles.h_h1 }>React</h1></Link>
                 </div>
                 <div className={ styles.menuList }>
-                    {MenuList.map((menu) => ( 
+                    {menuList.map((menu) => ( 
                         <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("200px") } } onMouseLeave={ meneMouseleave } >
+                            {/* ------------lvl1--------------- */}
                             <li key={ menu.menu_cd } className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to="/">{ menu.menu_nm }</Link></h4></li>
                             <ul style={{left: "0" } }className={ styles.slideItem }>
-                                <li>자유게시판</li>
-                                <li>자유게시판</li>
-                                <li>자유게시판</li>
-                                <li>자유게시판</li>
-                                <li>자유게시판</li>
+                                {/* ------------lvl2--------------- */}
+                                {childMenuList[menu.menu_cd]?.map( (child)=>(
+                                    <li key={child.menu_cd}>{child.menu_nm}</li>
+                                ))}
+                                
                             </ul>
                         </div>
                     ))}
