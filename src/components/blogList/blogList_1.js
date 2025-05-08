@@ -14,7 +14,6 @@ function BlogList_1() {
 
         setList(testJson);
         setDetail(testJson[0]);
-        console.log(list);
     }
 
     useEffect(() => {

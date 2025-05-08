@@ -3,7 +3,7 @@ import { getCookie, setCookie, setCookieAccessToken, setCookieRefreshToken } fro
 
 //axios 인스턴스
 export const cusAxios = axios.create({
-    baseURL : ''
+    baseURL : 'http://localhost:8080'
     , headers : {
          "Content-Type" : "application/json"
         // , "Authorization" : ''
@@ -59,7 +59,7 @@ cusAxios.interceptors.response.use(
                     //요청 중 오류로 인해 isTokenRefreshing이 false로 돌아가지 못하는 상황을 방지하기위해 예외처리
                     try {
                         const { data } = await cusAxios.post(
-                            "http://localhost:8080/refresh"
+                            "/refresh"
                             , { 
                                 "Refresh" : refreshToken || "wqwq"
                                 , "User" :  userContext || "not exist context _UserId"

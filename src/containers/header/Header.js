@@ -16,7 +16,7 @@ function Header() {
     //메뉴 리스트 불러오기
     const getMenuList = async () => {
         try {
-            const menu = await nonAuthGet("http://localhost:8080/getMenuList");
+            const menu = await nonAuthGet("/getMenuList");
             setMenuList(menu.data);
         } catch(e) {
 
@@ -25,7 +25,7 @@ function Header() {
 
     const getChildMenuList = async () => {
         try {
-            const menu = await nonAuthGet("http://localhost:8080/getChildMenuList");
+            const menu = await nonAuthGet("/getChildMenuList");
             return menu.data;
         } catch(e) {
 
@@ -43,23 +43,15 @@ function Header() {
     useEffect(async() => {
         const childObj = {};
         const childList = await getChildMenuList();
-        console.log("childList : " + childList);
-        console.log(childList);
         menuList
           ?.forEach(menu => {
-            const parent = menu.menu_cd;
-            console.log("parent");
-            console.log(parent);
+            const parent = menu.menu_cd; 
             if (!childObj[parent]) {
                 childObj[parent] = [];
             }
 
-            console.log(11);
             childObj[parent].push(...childList?.filter((child)=>child.p_cd == parent));
-            console.log(22);
           });
-        console.log("childObj : " + childObj);
-        console.log(childObj);
         
         setChildMenuList(childObj);
       }, [menuList]);
@@ -82,14 +74,6 @@ function Header() {
         slideRef.current.style.height = "0";
     }
 
-
-    //test
-    // const testFuction = async () => {
-        
-        
-    //     // authGet("http://localhost:8080/blog/" + localStorage.getItem("user_id"), _setIsAuthorizationHandler, navigator);
-    // }
-
     return (
         <div>
             <ul className={`${styles.h_body}`}>
@@ -97,6 +81,8 @@ function Header() {
                     <Link to="/"><h1 className={ styles.h_h1 }>React</h1></Link>
                 </div>
                 <div className={ styles.menuList }>
+
+                    
                     {menuList.map((menu) => ( 
                         <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("200px") } } onMouseLeave={ meneMouseleave } >
                             {/* ------------lvl1--------------- */}
@@ -104,7 +90,8 @@ function Header() {
                             <ul style={{left: "0" } }className={ styles.slideItem }>
                                 {/* ------------lvl2--------------- */}
                                 {childMenuList[menu.menu_cd]?.map( (child)=>(
-                                    <li key={child.menu_cd}>{child.menu_nm}</li>
+                                    <li key={child.menu_cd}><Link to={child.menu_url || ''}>{child.menu_nm}</Link></li>
+                                    // <li key={child.menu_cd}>{child.menu_nm}</li>
                                 ))}
                                 
                             </ul>
@@ -115,16 +102,16 @@ function Header() {
                     <div className={ styles.ect }></div>
                     { _isAuthorization ? (
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
-                            <li>프로필</li>
-                            <li onClick={ logoutOnClick }>로그아웃</li>
-                            <li><Link to={ "/blog/" + localStorage.getItem("user_id") }>내 블로그</Link></li>
-                            <li><Link to="/menu">메뉴관리</Link></li>
+                            <li key="auth_1">프로필</li>
+                            <li key="auth_2" onClick={ logoutOnClick }>로그아웃</li>
+                            <li key="auth_3"><Link to={ "/blog/" + localStorage.getItem("user_id") }>내 블로그</Link></li>
+                            <li key="auth_4"><Link to="/menu">메뉴관리</Link></li>
                         </ul>
                     ) : (
                         <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
-                            <li><Link to="/login">로그인</Link></li>
-                            <li><Link to="/join">회원가입</Link></li>
-                            <li>설정</li>
+                            <li key="nonauth_1"><Link to="/login">로그인</Link></li>
+                            <li key="nonauth_2"><Link to="/join">회원가입</Link></li>
+                            <li key="nonauth_3">설정</li>
                         </ul>
                     ) }
 

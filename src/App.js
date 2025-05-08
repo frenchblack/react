@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Header, Blogheader } from "containers";
-import Home from "routes/Home"
-import Login from "routes/Login";
-import Join from "routes/Join"
+import Home from "routes/common/Home"
+import Login from "routes/common/Login";
+import Join from "routes/common/Join"
 import Blog from "routes/Blog";
 import HeaderRoute from "routes/HeaderRoute";
 import BlogRoute from "routes/BlogRoute";
-import Menu from "routes/Menu";
+import Menu from "routes/common/Menu";
+import FreeBoard from "routes/board/FreeBoard";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/login" element={ <Login /> } />
           <Route path="/join" element={ <Join /> } />
           <Route path="/menu" element={ <Menu /> } />
+          <Route path="/freeBoard" element={ <FreeBoard /> } />
         </Route>
         <Route path="/blog/*" element={ <BlogRoute /> } >
             <Route path=":bloger_id" element={ <Blog /> } />

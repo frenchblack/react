@@ -35,7 +35,7 @@ function Login() {
         };
         
         try {
-            result = await nonAuthPost("http://localhost:8080/login", body);
+            result = await nonAuthPost("/login", body);
 
             setCookieAccessToken(result.data.token);
             setCookieRefreshToken(result.data.refreshtoken);

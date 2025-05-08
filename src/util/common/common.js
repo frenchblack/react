@@ -29,12 +29,24 @@ export const onChkChange = (e, setter, func, funcObj) => {
     }
 }
 
+//메뉴명 찾기
+export const getMenuName = (menuList , url) => {
+    const menu = menuList?.find((menu)=>menu.menu_url == url);
+
+    return menu?menu["menu_nm"]: null;
+}
+
+//--------------------------------------------------------------------
+//Axios
+//--------------------------------------------------------------------
+
+
 //로그아웃
 export const comm_logout = ( setContext ) => {
     let body = {
         user_id : localStorage.getItem("user_id")
     };
-    let result = nonAuthPost("http://localhost:8080/userLogout", body);
+    let result = nonAuthPost("/userLogout", body);
 
     removeCookie("Authorization");
     removeCookie("Refresh");
@@ -132,7 +144,7 @@ export const nonAuthGet = async (uri, params) => {
     let result;
 
     try {
-        result = await axios.get(uri, params);
+        result = await cusAxios.get(uri, params);
     } catch(e) {
         throw e;
     }
@@ -145,7 +157,7 @@ export const nonAuthPost = async (uri, body) => {
     let result;
 
     try {
-        result = await axios.post(uri, body);
+        result = await cusAxios.post(uri, body);
     } catch(e) {
         throw e;     
     }

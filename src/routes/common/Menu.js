@@ -24,6 +24,7 @@ function Menu() {
     , s_ord: 9
     , use_yn: false
     , etc: null
+    , menu_url: null
   });
 
   //생성용 객체
@@ -35,6 +36,7 @@ function Menu() {
     , s_ord: 9
     , use_yn: true
     , etc: null
+    , menu_url: null
   });
 
   const navigator = useNavigate();
@@ -63,7 +65,7 @@ function Menu() {
 
   const putMenu = async () => {
     try {
-      const post = await authPut("http://localhost:8080/putMenu", formData ,_setIsAuthorizationHandler ,navigator);
+      const post = await authPut("/putMenu", formData ,_setIsAuthorizationHandler ,navigator);
       alert("메뉴 수정에 성공하였습니다.");
     } catch(e) {
       console.log(e);
@@ -73,7 +75,7 @@ function Menu() {
 
   const deleteMenu = async (menu) => {
     try {
-      const post = await authDelete("http://localhost:8080/deleteMenu", menu ,_setIsAuthorizationHandler ,navigator);
+      const post = await authDelete("/deleteMenu", menu ,_setIsAuthorizationHandler ,navigator);
       alert("메뉴 삭제에 성공하였습니다.");
       setClickedDelete(false);
     } catch(e) {
@@ -156,6 +158,7 @@ function Menu() {
           , s_ord: 9
           , use_yn: true
           , etc: null
+          , menu_url: null
         });
         modalOnpen();
       } else {
@@ -219,6 +222,7 @@ function Menu() {
       , s_ord: 9
       , use_yn: true
       , etc: null
+      , menu_url: null
     });
     modalOnpen();
   }
@@ -294,6 +298,7 @@ function Menu() {
                 <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>상위 코드</p><input readOnly={true} className={ styles.detailItem} name="p_cd" value={ formData.p_cd || '' } onChange={handleChange} ></input></div>
                 <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>정렬 순서</p><input type="number" min="0" max ="99" className={ styles.detailItem } name="s_ord" value={ formData.s_ord || 9 } onChange={handleChange}></input></div>
                 <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>사용 여부</p><input type='checkbox' checked={ formData.use_yn === true } className={ styles.detailItem } name="use_yn" value={ formData.use_yn || 'false' } onChange={handleChange}></input></div>
+                <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>URL</p><input className={ styles.detailItem} name="menu_url" value={ formData.menu_url || '' } onChange={handleChange} ></input></div>
                 <div style ={ {height : '170px'} } className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>비고</p><textarea style = {{ fontSize : "15px"  }} className={ styles.detailItem } name="etc" value={ formData.etc || '' } onChange={handleChange}></textarea></div>
               </div>  
               ) : (
@@ -311,6 +316,7 @@ function Menu() {
           <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>상위 코드</p><input readOnly={true} className={ styles.detailItem} name="p_cd" value={ createData.p_cd || '' } onChange={(e) => handleChange(e, setCreateData)} ></input></div>
           <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>정렬 순서</p><input type="number" min="0" max ="99" className={ styles.detailItem } name="s_ord" value={ createData.s_ord || 9 } onChange={(e) => handleChange(e, setCreateData)}></input></div>
           <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>사용 여부</p><input type='checkbox' checked={ createData.use_yn === true } className={ styles.detailItem } name="use_yn" value={ createData.use_yn || 'false' } onChange={(e) => handleChange(e, setCreateData)}></input></div>
+          <div className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>URL</p><input className={ styles.detailItem} name="menu_url" value={ createData.menu_url || '' } onChange={(e) => handleChange(e, setCreateData)} ></input></div>
           <div style ={ {height : '170px'} } className={ styles.detailItem_div }><p className={ `${styles.detailItem_heder} ${styles.header}` }>비고</p><textarea style = {{ fontSize : "15px"  }} className={ styles.detailItem } name="etc" value={ createData.etc || '' } onChange={(e) => handleChange(e, setCreateData)}></textarea></div>
         </div>  
         <div style={{ textAlign : 'center', marginTop : "20px" }}>

@@ -36,7 +36,7 @@ function Join() {
         };
 
         try {
-            result = await nonAuthPost("http://localhost:8080/signup", boby);
+            result = await nonAuthPost("/signup", boby);
             alert("회원가입이 완료되었습니다.");
             navigator("/login");
         } catch(e) {
@@ -58,7 +58,7 @@ function Join() {
         }
 
         try {
-            result = await nonAuthPost("http://localhost:8080/checkId", boby);
+            result = await nonAuthPost("/checkId", boby);
 
             if ( result.data.result == 0) {
                 setIdLabel("사용가능한 아이디입니다.");
