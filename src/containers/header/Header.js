@@ -6,7 +6,7 @@ import { AuthContext, getCookie, nonAuthGet, authGet, comm_logout } from "util";
 function Header() {
     const [menuList, setMenuList] = useState([]);
     const [childMenuList, setChildMenuList] = useState([]);
-    
+    const [openMenuCd, setOpenMenuCd] = useState(null);
     
     const slideRef = useRef();
     const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
@@ -66,12 +66,18 @@ function Header() {
     }
 
     //슬라이더 드랍
-    const meneMouseenter = (h) => {
-        slideRef.current.style.height = h;
+    const meneMouseenter = (menu_cd) => {
+        // slideRef.current.style.height = h;
+        setOpenMenuCd(menu_cd);
     }
 
     const meneMouseleave = () => { 
-        slideRef.current.style.height = "0";
+        // slideRef.current.style.height = "0";
+        setOpenMenuCd(null);
+    }
+
+    const closeMenuList = () => {
+        setOpenMenuCd(null);
     }
 
     return (
@@ -84,36 +90,39 @@ function Header() {
 
                     
                     {menuList.map((menu) => ( 
-                        <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("200px") } } onMouseLeave={ meneMouseleave } >
+                        // <div key={ menu.menu_cd } className={ styles.slide } onMouseEnter={ () => { meneMouseenter("200px") } } onMouseLeave={ meneMouseleave } >
+                        <div key={ menu.menu_cd } className={ styles.slide }  onMouseEnter={ () => { meneMouseenter(menu.menu_cd) } } onMouseLeave={ meneMouseleave }>
                             {/* ------------lvl1--------------- */}
-                            <li key={ menu.menu_cd } className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to="/">{ menu.menu_nm }</Link></h4></li>
-                            <ul style={{left: "0" } }className={ styles.slideItem }>
-                                {/* ------------lvl2--------------- */}
-                                {childMenuList[menu.menu_cd]?.map( (child)=>(
-                                    <li key={child.menu_cd}><Link to={child.menu_url || ''}>{child.menu_nm}</Link></li>
-                                    // <li key={child.menu_cd}>{child.menu_nm}</li>
-                                ))}
-                                
-                            </ul>
+                            <li className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to="/">{ menu.menu_nm }</Link></h4></li>
+                            {childMenuList[menu.menu_cd]?.length > 0 && (
+                                <ul style={{left : "0"}}className={`${styles.slideItem} ${openMenuCd === menu.menu_cd ? styles.show : styles.hide}`}>
+                                    {/* ------------lvl2--------------- */}
+                                    {childMenuList[menu.menu_cd]?.map( (child)=>(
+                                        <li key={child.menu_cd}><Link to={child.menu_url || ''} onClick={meneMouseleave}>{child.menu_nm}</Link></li>
+                                        // <li key={child.menu_cd}>{child.menu_nm}</li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     ))}
                 </div>
-                <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("160px") } } onMouseLeave={ meneMouseleave } >
-                    <div className={ styles.ect }></div>
-                    { _isAuthorization ? (
-                        <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
+                <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("header_etc") } } onMouseLeave={ meneMouseleave } >
+                {/* <div className={ styles.slide } > */}
+                    <div className={ styles.ect }><h4>기타</h4></div>
+                    {_isAuthorization ? (
+                        <ul style={{textAlign : "right", right: "-30px"} } className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>
                             <li key="auth_1">프로필</li>
                             <li key="auth_2" onClick={ logoutOnClick }>로그아웃</li>
-                            <li key="auth_3"><Link to={ "/blog/" + localStorage.getItem("user_id") }>내 블로그</Link></li>
-                            <li key="auth_4"><Link to="/menu">메뉴관리</Link></li>
+                            <li key="auth_3"><Link to={ "/blog/" + localStorage.getItem("user_id") } onClick={meneMouseleave}>내 블로그</Link></li>
+                            <li key="auth_4"><Link to="/menu" onClick={meneMouseleave}>메뉴관리</Link></li>
                         </ul>
                     ) : (
-                        <ul style={{textAlign : "right", right: "0", paddingRight: "40px"} } className={ styles.slideItem }>
-                            <li key="nonauth_1"><Link to="/login">로그인</Link></li>
-                            <li key="nonauth_2"><Link to="/join">회원가입</Link></li>
+                        <ul style={{textAlign : "right", right: "-30px"} } className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>
+                            <li key="nonauth_1"><Link to="/login" onClick={meneMouseleave}>로그인</Link></li>
+                            <li key="nonauth_2"><Link to="/join" onClick={meneMouseleave}>회원가입</Link></li>
                             <li key="nonauth_3">설정</li>
                         </ul>
-                    ) }
+                    )}     
 
                 </div>
             </ul>

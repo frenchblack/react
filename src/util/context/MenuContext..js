@@ -9,8 +9,6 @@ const MenuContextProvider = ({ children }) => {
   const getMenuList = async () => {
     try {
       const res = await nonAuthGet("/getChildMenuList");
-      console.log("Context MenuList");
-      console.log(res.data);
       setMenuList(res.data);
     } catch (e) {
       console.error(e);

@@ -75,10 +75,10 @@ button {
     border-radius: 0 10px 0 0;
 }
 
-.grid_ul {
+/* .grid_ul {
 
-    /* height: 800px; */
-}
+    height: 800px;
+} */
 
 .menuItem {
     display: flex;
