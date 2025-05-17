@@ -62,3 +62,59 @@
     flex: 1;
     text-align: center;
 }
+
+.searchBar {
+  display: flex;
+  gap: 10px;
+  margin: 20px 20px;
+  justify-content: center;
+}
+
+.searchSelect,
+.searchInput,
+.searchButton {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.searchButton {
+    border: 1px solid #000;
+    background-color: black;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.searchButton:hover {
+  background-color: #f0f0f0;
+}
+
+.searchInput {
+  flex: 0.3;
+}
+
+.pagination {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.pageBtn {
+  margin: 0 4px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.5s ease;
+}
+
+.pageBtn:hover {
+  background-color: #f0f0f0;
+}
+
+.activePage {
+  font-weight: bold;
+  background-color: #000;
+  color: white;
+  border: 1px solid #000;
+}
