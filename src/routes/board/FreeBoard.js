@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useLocation, useSearchParams } from "react-router-dom"
-import { MenuContext, getMenuName, nonAuthGet } from "util";
+import { MenuContext, getMenuName, nonAuthGet, getMenuCd } from "util";
 import styles from "./FreeBoard.module.css";
 
 function FreeBoard() {
@@ -11,23 +11,30 @@ function FreeBoard() {
   const initPage = parseInt(searchParams.get("page")) || 0;
   const initKeyword = searchParams.get("keyword") || "";
   const initType = searchParams.get("type") || "title";
+  const initCategory = searchParams.get("category") || "";
+  const initSubCategory = searchParams.get("subCategory") || "";
 
   const [boardList, setBoardList] = useState();
   const menuName = getMenuName(useContext(MenuContext).menuList, useLocation().pathname);
+  const menuCd = getMenuCd(useContext(MenuContext).menuList, useLocation().pathname);
   const [page, setPage] = useState(initPage);
   const [visiblePages, setVisiblePages] = useState([0,1,2]);
   const [hasNext, setHasNext] = useState(false);
   const [keyword, setKeyword] = useState(initKeyword);
   const sendKeyword = useRef(initKeyword); //searchParam 사용을 위해 ref사용
   const [searchType, setSearchType] = useState(initType); // 기본값: 제목  
+  const [categoryList, setCategoryList] = useState([]);
+  const [subCategoryList, setSubCategoryList] = useState([]);
+  const [category, setCategory] = useState(initCategory);
+  const [subCategory, setSubCategory] = useState(initSubCategory);
   
 
   //===========================================================================
   //2.내부 함수
   //===========================================================================
   useEffect(() => {
-  }, [page]);
-
+    getCategoryList();
+  }, []);
   useEffect(() => {
     const p = parseInt(searchParams.get("page")) || 0;
     const k = searchParams.get("keyword") || "";
@@ -42,9 +49,9 @@ function FreeBoard() {
   }, [searchParams]);
 
   //게시판 리스트 불러오기
-  const getBoardList = async ({page = 0, size = 15, keyword="", type=""}) => {
+  const getBoardList = async ({page = 0, size = 15, keyword="", type="", category="", subCategory=""}) => {
       try {
-          const menu = await nonAuthGet(`/getBoardList?page=${page}&size=${size}&keyword=${keyword}&type=${type}`);
+          const menu = await nonAuthGet(`/getBoardList?page=${page}&size=${size}&keyword=${keyword}&type=${type}&category=${category}&subCategory=${subCategory}`);
           setBoardList(menu.data.content);
 
           const nextCount = menu.data.nextCount;
@@ -56,6 +63,16 @@ function FreeBoard() {
 
           setVisiblePages(pages);
           setHasNext(nextCount > 0);
+      } catch(e) {
+
+      }
+  }
+
+    //게시판 리스트 불러오기
+  const getCategoryList = async () => {
+      try {
+          const list = await nonAuthGet(`/getCategories?menu_cd=${menuCd}`);
+          setCategoryList(list.data);
       } catch(e) {
 
       }
@@ -82,6 +99,18 @@ function FreeBoard() {
       <h1 className={ styles.menu_nm }>
         {menuName}
       </h1>
+      <div className={styles.searchBar}>
+        <select value={category} onChange={e => setCategory(e.target.value)} className={styles.searchSelect}>
+          {categoryList.map(cat => (
+            <option key={cat.category_cd} value={cat.category_cd}>{cat.category_nm}</option>
+          ))}
+        </select>
+        <select value={subCategory} onChange={e => setSubCategory(e.target.value)} className={styles.searchSelect}>
+          {subCategoryList.map(sub => (
+            <option key={sub.code} value={sub.name}>{sub.name}</option>
+          ))}
+        </select>
+      </div>
       <div className={styles.list_div}>
         <div className={styles.listHeader}>
           <div className={styles.listItem1}>글번호</div>

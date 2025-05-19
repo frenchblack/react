@@ -36,6 +36,13 @@ export const getMenuName = (menuList , url) => {
     return menu?menu["menu_nm"]: null;
 }
 
+//메뉴cd 찾기
+export const getMenuCd = (menuList , url) => {
+    const menu = menuList?.find((menu)=>menu.menu_url == url);
+
+    return menu?menu["menu_cd"]: null;
+}
+
 //--------------------------------------------------------------------
 //Axios
 //--------------------------------------------------------------------
