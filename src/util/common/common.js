@@ -43,6 +43,15 @@ export const getMenuCd = (menuList , url) => {
     return menu?menu["menu_cd"]: null;
 }
 
+//메뉴cd 찾기
+export const utilSetParam = (searchParams, setSearchParams, newParams) => {
+    const currentParams = Object.fromEntries([...searchParams.entries()]);
+    setSearchParams({
+        ...currentParams,
+        ...newParams
+    });
+}
+
 //--------------------------------------------------------------------
 //Axios
 //--------------------------------------------------------------------

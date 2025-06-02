@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useLocation, useSearchParams } from "react-router-dom"
-import { MenuContext, getMenuName, nonAuthGet, getMenuCd } from "util";
+import { MenuContext, getMenuName, nonAuthGet, getMenuCd, utilSetParam } from "util";
 import styles from "./FreeBoard.module.css";
 
 function FreeBoard() {
@@ -15,7 +15,7 @@ function FreeBoard() {
   const initSubCategory = searchParams.get("subCategory") || "";
 
   const [boardList, setBoardList] = useState();
-  const menuName = getMenuName(useContext(MenuContext).menuList, useLocation().pathname);
+  const menuName = getMenuName(useContext(MenuContext).menuList, useLocation().pathname);  
   const menuCd = getMenuCd(useContext(MenuContext).menuList, useLocation().pathname);
   const [page, setPage] = useState(initPage);
   const [visiblePages, setVisiblePages] = useState([0,1,2]);
@@ -33,19 +33,30 @@ function FreeBoard() {
   //2.내부 함수
   //===========================================================================
   useEffect(() => {
-    getCategoryList();
-  }, []);
+    console.log("getCategoryList start");
+    if(menuCd) getCategoryList();
+    console.log("getCategoryList end");
+  }, [menuCd]);
+
+  useEffect(() => {
+    if(category) getSubCategoryList(category);
+  }, [categoryList]);
+
   useEffect(() => {
     const p = parseInt(searchParams.get("page")) || 0;
     const k = searchParams.get("keyword") || "";
-    const t = searchParams.get("type") || "title";
+    const t = searchParams.get("type") || "title"; 
+    const cat = searchParams.get("category") || ""; 
+    const sub = searchParams.get("subCategory") || ""; 
 
     setPage(p);
     setKeyword(k);
     sendKeyword.current = k;
     setSearchType(t);
+    setCategory(cat);
+    setSubCategory(sub);
 
-    getBoardList({ page: p , keyword : k, type : t});
+    getBoardList({ page: p , keyword : k, type : t, category : cat, subCategory : sub });
   }, [searchParams]);
 
   //게시판 리스트 불러오기
@@ -68,7 +79,7 @@ function FreeBoard() {
       }
   }
 
-    //게시판 리스트 불러오기
+  //게시판 리스트 불러오기
   const getCategoryList = async () => {
       try {
           const list = await nonAuthGet(`/getCategories?menu_cd=${menuCd}`);
@@ -77,20 +88,50 @@ function FreeBoard() {
 
       }
   }
+
+  const getSubCategoryList = async (p_cd) => {
+      try {
+          console.log(`/getSubCategories?p_cd=${p_cd}`);
+          const list = await nonAuthGet(`/getSubCategories?p_cd=${p_cd}`);
+          setSubCategoryList(list.data);
+      } catch(e) {
+
+      }
+  }
+
+  //검색 기능
   const handleSearch = () => {
     const word = keyword.trim()=="" ? "" : keyword;
     sendKeyword.current = word;
 
-    setSearchParams({
-      page: 0,
-      keyword: word,
-      type: searchType
-    });
+    utilSetParam(searchParams, setSearchParams, {      
+      page: 0
+    , keyword: word
+    , type: searchType
+    })
   }
 
   //===========================================================================
   //3.event 함수
   //===========================================================================  
+  const selectCategory = (category_cd) => {
+    setCategory(category_cd);
+    getSubCategoryList(category_cd);   
+    utilSetParam(searchParams, setSearchParams, {      
+      page: 0
+    , category: category_cd
+    , subCategory : ""
+    }) 
+  }
+
+  const selectSubCategory = (category_cd) => {
+    setSubCategory(category_cd);
+    utilSetParam(searchParams, setSearchParams, {      
+      page : 0
+    , subCategory : category_cd
+    }) 
+  }
+
   //===========================================================================
   //4.컴포넌트 return
   //=========================================================================== 
@@ -100,14 +141,16 @@ function FreeBoard() {
         {menuName}
       </h1>
       <div className={styles.searchBar}>
-        <select value={category} onChange={e => setCategory(e.target.value)} className={styles.searchSelect}>
+        <select value={category} onChange={e => selectCategory(e.target.value)} className={styles.searchSelect}>
+          <option value="">전체</option>
           {categoryList.map(cat => (
             <option key={cat.category_cd} value={cat.category_cd}>{cat.category_nm}</option>
           ))}
         </select>
-        <select value={subCategory} onChange={e => setSubCategory(e.target.value)} className={styles.searchSelect}>
+        <select value={subCategory} onChange={e => selectSubCategory(e.target.value)} className={styles.searchSelect}>
+          <option value="">전체</option>
           {subCategoryList.map(sub => (
-            <option key={sub.code} value={sub.name}>{sub.name}</option>
+            <option key={sub.category_cd} value={sub.category_cd}>{sub.category_nm}</option>
           ))}
         </select>
       </div>
@@ -159,16 +202,16 @@ function FreeBoard() {
       </div>
       <div className={styles.pagination}>
         {page > 0 && (
-          <button className={styles.pageBtn} onClick={() => setPage(Math.max(0, page - 5))}>이전</button>
+          <button className={styles.pageBtn} onClick={() => utilSetParam(searchParams, setSearchParams,{
+                      page: Math.max(0, page - 5)
+                    })}>이전</button>
         )}
 
         {visiblePages.map((p) => (
           <button
             key={p}
-            onClick={() => setSearchParams({
-                      page: p,
-                      keyword: sendKeyword.current,
-                      type: searchType
+            onClick={() => utilSetParam(searchParams, setSearchParams,{
+                      page: p
                     })}
             className={`${styles.pageBtn} ${p === page ? styles.activePage : ''}`}
           >
@@ -177,7 +220,9 @@ function FreeBoard() {
         ))}
 
         {hasNext && (
-          <button className={styles.pageBtn} onClick={() => setPage(visiblePages[visiblePages.length - 1])}>다음</button>
+          <button className={styles.pageBtn} onClick={() => utilSetParam(searchParams, setSearchParams,{
+                      page: visiblePages[visiblePages.length - 1]
+                    })}>다음</button>
         )}
       </div>
     </div>
