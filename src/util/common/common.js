@@ -44,12 +44,19 @@ export const getMenuCd = (menuList , url) => {
 }
 
 //메뉴cd 찾기
-export const utilSetParam = (searchParams, setSearchParams, newParams) => {
-    const currentParams = Object.fromEntries([...searchParams.entries()]);
-    setSearchParams({
-        ...currentParams,
-        ...newParams
+export const utilSetParam = (searchParams, setSearchParams, newParams, defaultParams = {}) => {
+    const sParams = new URLSearchParams(searchParams.toString());
+
+    Object.entries(newParams).forEach(([key, value]) => {
+        const defaultValue = defaultParams[key];
+
+        if (value === undefined || value === null || value === "" || value === defaultValue) {
+            sParams.delete(key); // 기본값이거나 빈 값이면 제거
+        } else {
+            sParams.set(key, value); // 다르면 추가
+        }
     });
+    setSearchParams(sParams);
 }
 
 //--------------------------------------------------------------------

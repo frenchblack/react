@@ -66,8 +66,21 @@
 .searchBar {
   display: flex;
   gap: 10px;
-  margin: 20px 20px;
+  margin: 20px 0 20px 0 ;
   justify-content: center;
+}
+
+.cate_div{
+  display: flex;
+  flex : 1;
+  gap: 10px;
+}
+
+.sort_div{
+  display: flex;
+  flex : 1;
+  gap: 10px;
+  justify-content: right;
 }
 
 .searchSelect,
