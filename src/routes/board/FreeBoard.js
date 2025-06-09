@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom"
-import { MenuContext, getMenuName, nonAuthGet, getMenuCd, utilSetParam } from "util";
+import { MenuContext, getMenuName, nonAuthGet, getMenuCd, utilSetParam,AuthContext, isLogin } from "util";
 import styles from "./FreeBoard.module.css";
 
 function FreeBoard() {
@@ -31,6 +31,7 @@ function FreeBoard() {
   const pathNm = useLocation().pathname;
   const menuName = getMenuName(useContext(MenuContext).menuList, pathNm);  
   const menuCd = getMenuCd(useContext(MenuContext).menuList, pathNm);
+  const {_isAuthorization} = useContext(AuthContext);
   const [page, setPage] = useState(initPage);
   const [visiblePages, setVisiblePages] = useState([0,1,2]);
   const [hasNext, setHasNext] = useState(false);
@@ -48,7 +49,8 @@ function FreeBoard() {
   //2.내부 함수
   //===========================================================================
   useEffect(() => {
-    if(menuCd) getCategoryList();
+    // if(menuCd) getCategoryList();
+    getCategoryList();
   }, [menuCd]);
 
   useEffect(() => {
@@ -127,7 +129,6 @@ function FreeBoard() {
 
   const getSubCategoryList = async (p_cd) => {
       try {
-          console.log(`/getSubCategories?p_cd=${p_cd}`);
           const list = await nonAuthGet(`/getSubCategories?p_cd=${p_cd}`);
           setSubCategoryList(list.data);
       } catch(e) {
@@ -244,32 +245,39 @@ function FreeBoard() {
         ))}
       </div>
       <div className={styles.searchBar}>
-        <select
-          value={searchType}
-          onChange={(e) => setSearchType(e.target.value)}
-          className={styles.searchSelect}
-        >
-          <option value="title">제목</option>
-          <option value="writer">작성자</option>
-          <option value="titleContent">제목+내용</option>
-        </select>
+        <div className={styles.searchBox}>
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value)}
+            className={styles.searchSelect}
+          >
+            <option value="title">제목</option>
+            <option value="writer">작성자</option>
+            <option value="titleContent">제목+내용</option>
+          </select>
 
-        <input
-          type="text"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          placeholder="검색어를 입력하세요"
-          className={styles.searchInput}
-          onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            handleSearch(); // Enter 눌렀을 때 검색 실행
-          }
-          }}
-        />
+          <input
+            type="text"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="검색어를 입력하세요"
+            className={styles.searchInput}
+            onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSearch(); // Enter 눌렀을 때 검색 실행
+            }
+            }}
+          />
 
-        <button onClick={() => handleSearch()} className={styles.searchButton}>
-          검색
-        </button>
+          <button onClick={() => handleSearch()} className={styles.searchButton}>
+            검색
+          </button>
+        </div>
+        {isLogin(_isAuthorization) &&
+        <Link to= {`${pathNm}/WriteBoard?menu_cd=${menuCd}&menu_nm=${menuName}`} className={`blackLink ${styles.writeBtn}`} >
+            글 쓰기
+        </Link>
+        }
       </div>
       <div className={styles.pagination}>
         {page > 0 && (

@@ -59,6 +59,18 @@ export const utilSetParam = (searchParams, setSearchParams, newParams, defaultPa
     setSearchParams(sParams);
 }
 
+//클라이언트 내 로그인 중인지 확인.
+export const isLogin = (context) => {
+    const token = getCookie("Authorization");
+    const id = localStorage.getItem("user_id");
+    if(token != null && token != "" && token != undefined
+        && id != null && id != "" && id != undefined
+        && context
+    ) {
+        return true;
+    }
+}
+
 //--------------------------------------------------------------------
 //Axios
 //--------------------------------------------------------------------

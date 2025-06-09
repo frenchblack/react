@@ -8,6 +8,7 @@ import HeaderRoute from "routes/HeaderRoute";
 import BlogRoute from "routes/BlogRoute";
 import Menu from "routes/common/Menu";
 import FreeBoard from "routes/board/FreeBoard";
+import WriteBoard from "routes/board/WriteBoard";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/join" element={ <Join /> } />
           <Route path="/menu" element={ <Menu /> } />
           <Route path="/freeBoard" element={ <FreeBoard /> } />
+          <Route path=":base/WriteBoard" element={<WriteBoard />} />
         </Route>
         <Route path="/blog/*" element={ <BlogRoute /> } >
             <Route path=":bloger_id" element={ <Blog /> } />

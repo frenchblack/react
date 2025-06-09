@@ -70,6 +70,12 @@
   justify-content: center;
 }
 
+.searchBox {
+  display: flex;
+  gap: 10px;
+  margin: 0 auto;
+}
+
 .cate_div{
   display: flex;
   flex : 1;
@@ -100,10 +106,11 @@
 
 .searchButton:hover {
   background-color: #f0f0f0;
+  color: black;
 }
 
 .searchInput {
-  flex: 0.3;
+  width: 250px;
 }
 
 .pagination {
@@ -123,6 +130,7 @@
 
 .pageBtn:hover {
   background-color: #f0f0f0;
+  color: black;
 }
 
 .activePage {
