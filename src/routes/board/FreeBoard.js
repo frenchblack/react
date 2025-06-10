@@ -117,7 +117,7 @@ function FreeBoard() {
     }
   }
 
-  //게시판 리스트 불러오기
+  //카테고리 불러오기
   const getCategoryList = async () => {
       try {
           const list = await nonAuthGet(`/getCategories?menu_cd=${menuCd}`);

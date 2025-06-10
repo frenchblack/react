@@ -133,3 +133,9 @@ input:focus {
   background-color: #f0f0f0;
   color: black;
 }
+
+select {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}

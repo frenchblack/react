@@ -71,6 +71,10 @@ export const isLogin = (context) => {
     }
 }
 
+export const chkLogin = async (setContext, navi) => {
+    await authGet("/chkLogin", setContext , navi);
+}
+
 //--------------------------------------------------------------------
 //Axios
 //--------------------------------------------------------------------
@@ -97,6 +101,9 @@ const chkAuthorization = () => {
     }
 }
 
+
+
+//cusAxios Error처리
 const controlErorr = (status, setContext, navi) => {
     if (status != 433) {
         if (status == 401) {
