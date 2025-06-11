@@ -139,3 +139,8 @@ select {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
+.menu_nm {
+    border-bottom: 1px solid black;
+    padding-bottom: 10px;
+}

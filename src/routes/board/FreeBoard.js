@@ -191,7 +191,7 @@ function FreeBoard() {
   //=========================================================================== 
   return (
     <div className={`${ styles.Home } container`}>
-      <h1 className={ styles.menu_nm }>
+      <h1 className={ `menu_nm` }>
         <Link to={pathNm}>
           {menuName}
         </Link>
@@ -235,13 +235,15 @@ function FreeBoard() {
           <div className={styles.listItem5}>조회</div>
         </div>
         {boardList?.map((board) =>(
-          <div key={board.board_no} className={styles.list}>
-            <div className={styles.listItem1} >{board.board_no}</div>
-            <div className={styles.listItem2} >{board.category_nm}</div>
-            <div className={styles.listItem3} >{board.title}</div>
-            <div className={styles.listItem4} >{board.like_cnt}</div>
-            <div className={styles.listItem5} >{board.view_cnt}</div>
-          </div>
+          <Link to={`${pathNm}/ViewBoard?board_no=${board.board_no}&menu_cd=${menuCd}&menu_nm=${menuName}`}>
+            <div key={board.board_no} className={styles.list}>
+              <div className={styles.listItem1} >{board.board_no}</div>
+              <div className={styles.listItem2} >{board.category_nm}</div>
+              <div className={styles.listItem3} >{board.title}</div>
+              <div className={styles.listItem4} >{board.like_cnt}</div>
+              <div className={styles.listItem5} >{board.view_cnt}</div>
+            </div>
+          </Link>
         ))}
       </div>
       <div className={styles.searchBar}>

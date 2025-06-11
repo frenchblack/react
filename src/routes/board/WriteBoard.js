@@ -124,8 +124,8 @@ function WriteBoard() {
   //=========================================================================== 
   return (
     <div className={`${ styles.Home } container`}>
-      <h1 className={ styles.menu_nm }>
-        <Link to={pathNm}>
+      <h1 className={ `menu_nm` }>
+        <Link to={pathNm.substring(0, pathNm.lastIndexOf("/"))}>
           {`${menuName} 글 쓰기`}
         </Link>
       </h1>
