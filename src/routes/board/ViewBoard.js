@@ -14,6 +14,7 @@ function ViewBoard() {
   const board_no = searchParams.get("board_no");
   const upPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
   const navigator = useNavigate();
+  const prevPath = sessionStorage.getItem("prevPath");
 
   const [boardData, setBoardData] = useState({});
   //===========================================================================
@@ -40,7 +41,18 @@ function ViewBoard() {
   }
   //===========================================================================
   //3.event 함수
-  //===========================================================================  
+  //=========================================================================== 
+  const onClickToList = () => {
+    try {
+      if (prevPath === upPath) {
+        navigator(-1); // 뒤로가기
+      } else {
+        navigator(upPath); // ex: /freeBoard
+      }
+    } catch {
+      navigator(upPath);
+    }
+  }
   //===========================================================================
   //4.컴포넌트 return
   //=========================================================================== 
@@ -51,32 +63,32 @@ function ViewBoard() {
           {`${menuName}`}
         </Link>
       </h1>
-      <div>
-        <div>
-          <p>
-            {board_no}
-          </p>
-        </div>
-        <div>
-          <p>
-            {boardData.title}
-          </p>
-        </div>
-        <div>
-          <p>
-            {boardData.content}
-          </p>
-        </div>
-        <div>
-          <p>
+      <div className={styles.detail_div}>
+        <div className={styles.info_header}>
+          <div>
+            {boardData.view_cnt}
+          </div>
+          <div>
             {boardData.category_nm}
-          </p>
+          </div>
+          <div>
+            {boardData.write_date?.split(".")[0]?.slice(0, 16)}
+          </div>
         </div>
-        <div>
-          <p>
-            {boardData.write_date}
-          </p>
+        <div className={styles.title}>
+          {boardData.title}
         </div>
+        <div className={styles.content}>
+          {boardData.content}
+        </div>
+      </div>
+      <div className={styles.like_div}>
+        {`추천 : ${boardData.like_cnt}`}
+      </div>
+      <div className={styles.list_div}>
+        <button className={`whiteBtn ${styles.toListBtn}`} onClick={onClickToList}>
+          목록으로
+        </button>
       </div>
     </div>
   );

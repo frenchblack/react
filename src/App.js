@@ -10,10 +10,12 @@ import Menu from "routes/common/Menu";
 import FreeBoard from "routes/board/FreeBoard";
 import WriteBoard from "routes/board/WriteBoard";
 import ViewBoard from "routes/board/ViewBoard";
+import { RouteTracker } from "components";
 
 function App() {
   return (
     <Router>
+      <RouteTracker />
       {/* <Header /> */}
       <Routes>
         <Route element={ <HeaderRoute /> }>

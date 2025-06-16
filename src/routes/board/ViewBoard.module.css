@@ -1,3 +1,66 @@
 .Home {
     min-height: 500px;
 }
+
+.detail_div {
+    margin-top: 20px;
+    /* box-shadow: 0 0 10px rgba(0,0,0,0.1); */
+    min-height: 600px;
+}
+
+.info_header {
+    gap : 20px;
+    display: flex;
+    justify-content: right;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 5rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.content {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.fileInfo {
+  font-size: 0.85rem;
+  color: #ff5c5c;
+  margin-bottom: 2rem;
+}
+
+.btnWrap {
+  text-align: right;
+}
+
+.like_div{
+    margin: 20px 0;
+    text-align: center;
+}
+
+.list_div {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.toListBtn{
+    text-align: center;
+    justify-content: center;
+    width: 8rem;
+    font-size: 1rem;
+    font-weight: bold;
+    height: 3rem;
+}
