@@ -1,9 +1,11 @@
 import axios from "axios";
 import { getCookie, setCookie, setCookieAccessToken, setCookieRefreshToken } from "util/common/Cookies";
 
+export const BASE_URL = "http://localhost:8080";
+
 //axios 인스턴스
 export const cusAxios = axios.create({
-    baseURL : 'http://localhost:8080'
+    baseURL : BASE_URL
     , headers : {
          "Content-Type" : "application/json"
         // , "Authorization" : ''

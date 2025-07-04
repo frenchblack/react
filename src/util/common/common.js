@@ -72,7 +72,12 @@ export const isLogin = (context) => {
 }
 
 export const chkLogin = async (setContext, navi) => {
-    await authGet("/chkLogin", setContext , navi);
+    try {
+        await authGet("/chkLogin", setContext , navi);
+    } catch(e) {
+        controlErorr(e.response.data.status, setContext, navi);
+        throw e;
+    }
 }
 
 //--------------------------------------------------------------------
@@ -112,6 +117,8 @@ const controlErorr = (status, setContext, navi) => {
             alert("접근 권한이 없습니다.");
 
             navi("/login");
+        } else if(status == 404) {
+            alert("페이지를 찾을 수 없습니다.");
         } else if(status >400 && status < 500) { 
             comm_logout( setContext );
 
@@ -173,6 +180,24 @@ export const authDelete = async (uri, body, setContext, navi) => {
     let result;
     try {
         result = await cusAxios.delete(uri, { data : body}); 
+    } catch(e) {
+        controlErorr(e.response.data.status, setContext, navi);
+        throw e;
+    }
+
+    return result;
+}
+
+export const autMultipartPatch = async (uri, formData, setContext, navi) => {
+    chkAuthorization();
+    let result;
+    try {
+        result = await cusAxios.patch(uri, formData
+            // , { data : formData
+        //   , headers: {
+        //         "Content-Type": "multipart/form-data"
+        //     }}
+        ); 
     } catch(e) {
         controlErorr(e.response.data.status, setContext, navi);
         throw e;

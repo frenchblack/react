@@ -78,8 +78,8 @@ function ViewBoard() {
         <div className={styles.title}>
           {boardData.title}
         </div>
-        <div className={styles.content}>
-          {boardData.content}
+        <div className={styles.content} dangerouslySetInnerHTML={{ __html: boardData.content }}>
+          {/* {boardData.content} */}
         </div>
       </div>
       <div className={styles.like_div}>

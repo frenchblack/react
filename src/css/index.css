@@ -144,3 +144,20 @@ select {
     border-bottom: 1px solid black;
     padding-bottom: 10px;
 }
+
+.ql-align-center {
+  text-align: center;
+}
+.ql-align-right {
+  text-align: right;
+}
+.ql-align-justify {
+  text-align: justify;
+}
+
+.ql-editor img{
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}

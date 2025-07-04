@@ -1,8 +1,12 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef, useMemo } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom"
-import { MenuContext, getMenuName, getMenuCd, chkLogin, AuthContext, nonAuthGet, authPost } from "util";
+import { MenuContext, getMenuName, getMenuCd, chkLogin, AuthContext, nonAuthGet, authPost, autMultipartPatch, BASE_URL } from "util";
 import styles from "./WriteBoard.module.css";
 import { Modal } from 'components';
+import ReactQuill from 'react-quill';
+import ImageResize from 'quill-image-resize-module-react'
+import { v4 as uuidv4 } from 'uuid';
+import 'react-quill/dist/quill.snow.css';
 
 function WriteBoard() {
   //===========================================================================
@@ -15,6 +19,71 @@ function WriteBoard() {
   const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
   const navigator = useNavigate();
   const [modalIsOpen, setModalIsOpen] = useState();
+  const quillRef = useRef();
+  const tempUuidRef = useRef(uuidv4()); //이미지 업로드 temp폴더 명
+
+  const imageHandler = () => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file"); 
+    input.setAttribute("accept", "image/*");
+    input.click(); 
+
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file || !quillRef.current) return; 
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await autMultipartPatch(
+          `/boadUpload/temp/${tempUuidRef.current}`
+        , formData
+        , _setIsAuthorizationHandler
+        , navigator 
+        );
+
+        const imageUrl = BASE_URL + response.data.url; // ex: /images/temp/uuid/파일.jpg
+
+        const editor = quillRef.current.getEditor();
+        const range = editor.getSelection();
+        editor.insertEmbed(range.index, "image", imageUrl);
+      } catch (e) {
+        alert("이미지 업로드에 실패했습니다.");
+      }
+    };
+  }
+  const modules = useMemo(() => {
+    return {
+      toolbar: {
+        container : [
+          [{ 'header': [1, 2, 3, false] }],
+          [{ 'font': [] }],
+          [{ 'size': ['small', false, 'large', 'huge'] }],
+          [{ 'color': [] }, { 'background': [] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'align': [] }],
+          [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+          ['link', 'image'],
+          ['clean']
+        ],
+        handlers: {
+          image: imageHandler,
+        },
+      },
+      imageResize: {
+        modules: ['Resize', 'DisplaySize'], 
+      },
+    };
+  }, []);
+
+  const formats = [
+    'header', 'font', 'size',
+    'bold', 'italic', 'underline', 'strike',
+    'color', 'background',
+    'align', 'list', 'bullet',
+    'link', 'image'
+  ];
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -31,6 +100,7 @@ function WriteBoard() {
   //===========================================================================
   useEffect(() => {
     chkLogin(_setIsAuthorizationHandler, navigator); //현재 클라이언트 권한이 유효한지 서버와 통신해서 확인
+    ReactQuill.Quill.register('modules/imageResize', ImageResize);
     getCategoryList();
   }, []);
 
@@ -41,7 +111,7 @@ function WriteBoard() {
     }
   }, [categoryList]);
 
-    useEffect(() => {
+  useEffect(() => {
     if(categoryList.length > 0) {
       setSubCategory(categoryList[0].category_cd);
     }
@@ -73,6 +143,7 @@ function WriteBoard() {
     , "writer" : localStorage.getItem("user_id")
     , "category_cd" : category
     , "menu_cd" : menuCd
+    , "uuid" : tempUuidRef.current
     }
 
     try {
@@ -89,10 +160,11 @@ function WriteBoard() {
   }
 
   const afterComplete = () => {
-    console.log(insertNo);
     const upperPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
     navigator(upperPath);
   }
+
+ 
 
   //===========================================================================
   //3.event 함수
@@ -149,12 +221,17 @@ function WriteBoard() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <textarea
-          className={styles.content}
-          placeholder="내용을 입력하세요"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
+        <div className={styles.editorWrapper }>
+          <ReactQuill
+            ref={quillRef}
+            className={styles.content}
+            value={content}
+            onChange={setContent}
+            modules={modules}
+            formats={formats}
+            placeholder="내용을 입력하세요"
+          />
+        </div>
         <div className={styles.buttonBox}>
           <button className={`blackBtn ${styles.create}`} onClick={handleSubmit}>
             등록
