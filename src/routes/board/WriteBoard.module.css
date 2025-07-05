@@ -65,6 +65,26 @@
   text-align: right;
 }
 
+.file_container {
+  background-color: #eeeeee;
+}
+
+.file_upload {
+  margin : 10px 10px 0 0;
+}
+
+.file_list {
+  padding : 10px;
+}
+
+.file_item {
+  display: flex;
+}
+
+.file_del{
+  width: 40px;
+}
+
 .modal_text {
     text-align: center;    
 }
@@ -72,4 +92,8 @@
 .modal_div {
     margin-top: 20px;
     text-align: center;
+}
+
+.create {
+  margin-top: 20px;
 }

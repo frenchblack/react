@@ -92,6 +92,8 @@ function WriteBoard() {
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [insertNo, setInsertNo] = useState(null);
+  const [fileList, setFileList] = useState([]);
+
 
 
 
@@ -137,6 +139,8 @@ function WriteBoard() {
   }
 
   const postBoard = async () => {
+    const formData = new FormData();
+
     const body = {
       "title" : title
     , "content" : content
@@ -146,8 +150,17 @@ function WriteBoard() {
     , "uuid" : tempUuidRef.current
     }
 
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(body)], { type: "application/json" })
+    );
+
+    fileList.forEach(file => {
+      formData.append("files", file);
+    });
+
     try {
-        const result = await authPost(`/postBoard`, body,  _setIsAuthorizationHandler, navigator );
+        const result = await authPost(`/postBoard`, formData,  _setIsAuthorizationHandler, navigator );
         if(result.data < 0) {
           alert("새 글 등록에 실패하였습니다.");
           return;
@@ -191,6 +204,16 @@ function WriteBoard() {
   const modalOnClose = () => {
     afterComplete();
   }
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setFileList((prev) => [...prev, ...files]);
+  };
+
+  // 파일 삭제
+  const removeFile = (index) => {
+    setFileList((prev) => prev.filter((_, i) => i !== index));
+  };
   //===========================================================================
   //4.컴포넌트 return
   //=========================================================================== 
@@ -231,6 +254,19 @@ function WriteBoard() {
             formats={formats}
             placeholder="내용을 입력하세요"
           />
+        </div>
+        <div className={styles.file_container}>
+          <label className={`whiteBtn ${styles.file_upload}`} htmlFor="file-upload" style={{ cursor: 'pointer' }}>
+            📎 파일 첨부
+          </label>
+          <input id="file-upload" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} />
+          <div className={styles.file_list}>
+            {fileList.map((file, idx) => (
+              <div className={styles.flie_item} key={idx}>
+                <label>{idx}_{file.name}</label> <button className={`whiteBtn ${styles.file_del}`} onClick={() => removeFile(idx)}>❌</button>
+              </div>
+            ))}
+          </div>
         </div>
         <div className={styles.buttonBox}>
           <button className={`blackBtn ${styles.create}`} onClick={handleSubmit}>

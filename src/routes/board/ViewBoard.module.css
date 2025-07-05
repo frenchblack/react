@@ -11,7 +11,16 @@
 .info_header {
     gap : 20px;
     display: flex;
-    justify-content: right;
+    justify-content: space-between;
+}
+
+.file_box{
+   display: inline;
+}
+
+.info_box {
+    gap : 20px;
+    display: flex;
 }
 
 .title {
@@ -63,4 +72,23 @@
     font-size: 1rem;
     font-weight: bold;
     height: 3rem;
+}
+
+.fileBox {
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: white;
+  box-shadow: 4px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.fileTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.fileTable th,
+.fileTable td {
+  padding: 6px;
+  /* border: 1px solid #ddd; */
+  text-align: center;
 }
