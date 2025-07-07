@@ -1,12 +1,13 @@
 import { useState, useEffect, useContext, useRef, useMemo } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom"
-import { MenuContext, getMenuName, getMenuCd, chkLogin, AuthContext, nonAuthGet, authPost, autMultipartPatch, BASE_URL } from "util";
+import { MenuContext, getMenuName, getMenuCd, chkLogin, AuthContext, authGet, nonAuthGet, authPost, autMultipartPatch, BASE_URL } from "util";
 import styles from "./WriteBoard.module.css";
 import { Modal } from 'components';
 import ReactQuill from 'react-quill';
 import ImageResize from 'quill-image-resize-module-react'
 import { v4 as uuidv4 } from 'uuid';
 import 'react-quill/dist/quill.snow.css';
+import { authPut } from "util";
 
 function WriteBoard() {
   //===========================================================================
@@ -16,11 +17,13 @@ function WriteBoard() {
   const pathNm = useLocation().pathname;
   const menuName = searchParams.get("menu_nm");
   const menuCd = searchParams.get("menu_cd");
+  const paramBoard_no = searchParams.get("board_no");
   const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
   const navigator = useNavigate();
-  const [modalIsOpen, setModalIsOpen] = useState();
+  const [modalIsOpen, setModalIsOpen] = useState(); 
   const quillRef = useRef();
   const tempUuidRef = useRef(uuidv4()); //이미지 업로드 temp폴더 명
+  const isEdit = !!paramBoard_no;
 
   const imageHandler = () => {
     const input = document.createElement("input");
@@ -89,10 +92,13 @@ function WriteBoard() {
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
+  const [writer, setWriter] = useState("");
   const [categoryList, setCategoryList] = useState([]);
   const [subCategoryList, setSubCategoryList] = useState([]);
   const [insertNo, setInsertNo] = useState(null);
   const [fileList, setFileList] = useState([]);
+  const [loadFileList, setLoadFileList] = useState([]);
+  const [deleteFileIds, setDeleteFileIds] = useState([]);
 
 
 
@@ -104,6 +110,7 @@ function WriteBoard() {
     chkLogin(_setIsAuthorizationHandler, navigator); //현재 클라이언트 권한이 유효한지 서버와 통신해서 확인
     ReactQuill.Quill.register('modules/imageResize', ImageResize);
     getCategoryList();
+    if (isEdit) loadEditData();
   }, []);
 
   useEffect(() => {
@@ -138,26 +145,26 @@ function WriteBoard() {
       }
   }
 
-  const postBoard = async () => {
-    const formData = new FormData();
+  const loadEditData = async () => {
+    try {
+      const result = await authGet(`/getBoradDtail?board_no=${paramBoard_no}`, _setIsAuthorizationHandler, navigator );
+      console.log("load complete");
+      const data = result.data.board;
+      setTitle(data.title);
+      setContent(data.content);
+      setCategory(data.category_cd);
+      setSubCategory(data.sub_category_cd); 
+      setWriter(data.writer);
+      setLoadFileList(result.data.file || []);
 
-    const body = {
-      "title" : title
-    , "content" : content
-    , "writer" : localStorage.getItem("user_id")
-    , "category_cd" : category
-    , "menu_cd" : menuCd
-    , "uuid" : tempUuidRef.current
+    } catch(e) {
+      alert("저장된글을 불러오는데 실패하였습니다.");
+      navigator(-1);
     }
+  }
 
-    formData.append(
-      "data",
-      new Blob([JSON.stringify(body)], { type: "application/json" })
-    );
-
-    fileList.forEach(file => {
-      formData.append("files", file);
-    });
+  const postBoard = async () => {
+    const formData = parsingFormData();
 
     try {
         const result = await authPost(`/postBoard`, formData,  _setIsAuthorizationHandler, navigator );
@@ -172,12 +179,57 @@ function WriteBoard() {
     }
   }
 
+  const updateBorad = async() => {
+    const formData = parsingFormData();
+
+    try {
+        const result = await authPut(`/updateBoard`, formData,  _setIsAuthorizationHandler, navigator );
+        if(result.data < 0) {
+          alert("새 글 등록에 실패하였습니다.");
+          return;
+        }
+        // setInsertNo(result.data);
+        // setModalIsOpen(true);
+    } catch(e) {
+      alert("새 글 등록에 실패하였습니다...");
+    }
+  }
+
   const afterComplete = () => {
     const upperPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
     navigator(upperPath);
   }
 
- 
+  const parsingFormData = () => {
+    const formData = new FormData();
+
+    const body = {
+        "title" : title
+      , "content" : content
+      , "writer" : localStorage.getItem("user_id")
+      , "category_cd" : category
+      , "menu_cd" : menuCd
+      , "uuid" : tempUuidRef.current
+    }
+
+    formData.append(
+      "data",
+      new Blob([JSON.stringify(body)], { type: "application/json" })
+    );
+
+    fileList.forEach(file => {
+      formData.append("files", file);
+    });
+
+    if(isEdit) {
+      formData.append(
+        "deleteFiles",
+        new Blob([JSON.stringify(deleteFileIds)], { type: "application/json" })
+      );
+    }
+
+    return formData;
+  }
 
   //===========================================================================
   //3.event 함수
@@ -193,7 +245,11 @@ function WriteBoard() {
       return;
     }
 
-    postBoard();
+    if(isEdit){
+      updateBorad();
+    } else {
+      postBoard();
+    }
   };
 
   const changeCategory = (value) => {
@@ -214,6 +270,14 @@ function WriteBoard() {
   const removeFile = (index) => {
     setFileList((prev) => prev.filter((_, i) => i !== index));
   };
+
+  const removeOrifinFile = (file_id) => {
+    if(deleteFileIds.includes(file_id)) {
+       setDeleteFileIds((prev) => prev.filter((id) => id !== file_id));
+    } else {
+      setDeleteFileIds((prev) => [...prev, file_id]);
+    }
+  }
   //===========================================================================
   //4.컴포넌트 return
   //=========================================================================== 
@@ -261,6 +325,11 @@ function WriteBoard() {
           </label>
           <input id="file-upload" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} />
           <div className={styles.file_list}>
+            {loadFileList.map((file, idx) => (
+              <div className={styles.flie_item} key={file.file_id}>
+                <label>{file.origin_nm}</label> <button className={`${deleteFileIds.includes(file.file_id)? "blackBtn" : "whiteBtn"} ${styles.file_delete}`} onClick={() => removeOrifinFile(file.file_id)}>{deleteFileIds.includes(file.file_id) ? "삭제 취소" : "삭제"}</button>
+              </div>
+            ))}
             {fileList.map((file, idx) => (
               <div className={styles.flie_item} key={idx}>
                 <label>{idx}_{file.name}</label> <button className={`whiteBtn ${styles.file_del}`} onClick={() => removeFile(idx)}>❌</button>

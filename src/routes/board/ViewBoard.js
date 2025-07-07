@@ -33,7 +33,7 @@ function ViewBoard() {
           const data = await nonAuthGet(`/viewBoard?board_no=${board_no}`);
           setBoardData(data.data.board);
           setFileList(data.data.file || []);
-          console.log(data.data.file);
+          
           if(data.data == null || data.data == undefined || data.data == "" || data.data < 0) {
             alert("게시물이 존재하지 않습니다.");
           }
@@ -101,6 +101,12 @@ function ViewBoard() {
           목록으로
         </button>
       </div>
+      {(boardData.writer == localStorage.getItem("user_id")) && (
+        <div className={styles.edit} >
+          <Link to={`${upPath}/WriteBoard?menu_cd=${menuCd}&menu_nm=${menuName}&board_no=${boardData.board_no}`} className={`whiteBtn`}>수정</Link>
+          <Link to="" className={`whiteBtn`}>삭제</Link>
+        </div>
+      )}
       {showFileBox && (
           <div
             className={styles.fileBox}
