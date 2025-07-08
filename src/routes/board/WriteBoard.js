@@ -25,6 +25,14 @@ function WriteBoard() {
   const tempUuidRef = useRef(uuidv4()); //이미지 업로드 temp폴더 명
   const isEdit = !!paramBoard_no;
 
+  // ReactQuill.Quill.register('modules/imageResize', ImageResize);
+  if (
+    ReactQuill.Quill &&
+    typeof ReactQuill.Quill.register === "function" &&
+    !ReactQuill.Quill?.imports?.['modules/imageResize']
+  ) {
+    ReactQuill.Quill.register('modules/imageResize', ImageResize);
+  }
   const imageHandler = () => {
     const input = document.createElement("input");
     input.setAttribute("type", "file"); 
@@ -108,7 +116,6 @@ function WriteBoard() {
   //===========================================================================
   useEffect(() => {
     chkLogin(_setIsAuthorizationHandler, navigator); //현재 클라이언트 권한이 유효한지 서버와 통신해서 확인
-    ReactQuill.Quill.register('modules/imageResize', ImageResize);
     getCategoryList();
     if (isEdit) loadEditData();
   }, []);
@@ -188,8 +195,8 @@ function WriteBoard() {
           alert("새 글 등록에 실패하였습니다.");
           return;
         }
-        // setInsertNo(result.data);
-        // setModalIsOpen(true);
+        setInsertNo(result.data);
+        setModalIsOpen(true);
     } catch(e) {
       alert("새 글 등록에 실패하였습니다...");
     }
@@ -197,7 +204,7 @@ function WriteBoard() {
 
   const afterComplete = () => {
     const upperPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
-    navigator(upperPath);
+    navigator(upperPath + `/ViewBoard?board_no=${insertNo}&menu_cd=${menuCd}&menu_nm=${menuName}`);
   }
 
   const parsingFormData = () => {
@@ -210,6 +217,7 @@ function WriteBoard() {
       , "category_cd" : category
       , "menu_cd" : menuCd
       , "uuid" : tempUuidRef.current
+      , "board_no" : paramBoard_no
     }
 
     formData.append(
@@ -271,11 +279,11 @@ function WriteBoard() {
     setFileList((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeOrifinFile = (file_id) => {
-    if(deleteFileIds.includes(file_id)) {
-       setDeleteFileIds((prev) => prev.filter((id) => id !== file_id));
+  const removeOrifinFile = (file) => {
+    if(deleteFileIds.includes(file)) {
+       setDeleteFileIds((prev) => prev.filter((item) => item.file_id !== file.file_id));
     } else {
-      setDeleteFileIds((prev) => [...prev, file_id]);
+      setDeleteFileIds((prev) => [...prev, file]);
     }
   }
   //===========================================================================
@@ -325,9 +333,9 @@ function WriteBoard() {
           </label>
           <input id="file-upload" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} />
           <div className={styles.file_list}>
-            {loadFileList.map((file, idx) => (
+            {loadFileList.map((file) => (
               <div className={styles.flie_item} key={file.file_id}>
-                <label>{file.origin_nm}</label> <button className={`${deleteFileIds.includes(file.file_id)? "blackBtn" : "whiteBtn"} ${styles.file_delete}`} onClick={() => removeOrifinFile(file.file_id)}>{deleteFileIds.includes(file.file_id) ? "삭제 취소" : "삭제"}</button>
+                <label>{file.origin_nm}</label> <button className={`${deleteFileIds.some((item) => item.file_id == file.file_id)? "blackBtn" : "whiteBtn"} ${styles.file_delete}`} onClick={() => removeOrifinFile(file)}>{deleteFileIds.some((item) => item.file_id == file.file_id) ? "삭제 취소" : "삭제"}</button>
               </div>
             ))}
             {fileList.map((file, idx) => (

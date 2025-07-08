@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom"
-import { nonAuthGet, BASE_URL } from "util";
+import { nonAuthGet, BASE_URL, AuthContext} from "util";
+import {Confirm} from "components";
 import styles from "./ViewBoard.module.css";
+import { authDelete } from "util";
 
 function ViewBoard() {
   //===========================================================================
@@ -15,11 +17,13 @@ function ViewBoard() {
   const upPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
   const navigator = useNavigate();
   const prevPath = sessionStorage.getItem("prevPath");
+  const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
 
   const [boardData, setBoardData] = useState({});
   const [fileList, setFileList] = useState([]);
   const [showFileBox, setShowFileBox] = useState(false);
   const [fileBoxPos, setFileBoxPos] = useState({ x: 0, y: 0 });
+  const [delIsOpen, setDelIsOpen] = useState(false);
   //===========================================================================
   //2.내부 함수
   //===========================================================================
@@ -41,6 +45,18 @@ function ViewBoard() {
       } catch(e) {
           alert("게시물을 불러오지 못 했습니다.");
           navigator(upPath);
+      }
+  }
+
+  const deleteBoard = async () => {
+      try {
+          const result = await authDelete(`/deleteBoard?board_no=${board_no}`, {}, _setIsAuthorizationHandler, navigator );
+          if(result.data > 0) {
+            navigator(upPath);
+          }
+          
+      } catch(e) {
+          alert("삭제 중 오류가 발생하였습니다.");
       }
   }
   //===========================================================================
@@ -104,7 +120,7 @@ function ViewBoard() {
       {(boardData.writer == localStorage.getItem("user_id")) && (
         <div className={styles.edit} >
           <Link to={`${upPath}/WriteBoard?menu_cd=${menuCd}&menu_nm=${menuName}&board_no=${boardData.board_no}`} className={`whiteBtn`}>수정</Link>
-          <Link to="" className={`whiteBtn`}>삭제</Link>
+          <label className={`whiteBtn`} onClick={() => setDelIsOpen(true)}>삭제</label>
         </div>
       )}
       {showFileBox && (
@@ -147,6 +163,8 @@ function ViewBoard() {
           )}
         </div>
       )}
+      <Confirm isOpen={delIsOpen} onConfirm={deleteBoard}  onClose={() => setDelIsOpen(false)} message={`정말 게시글을 삭제 하시겠습니까?`}>
+      </Confirm>
     </div>
   );
 }
