@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom"
 import { nonAuthGet, BASE_URL, AuthContext} from "util";
-import {Confirm} from "components";
+import { Confirm, CommentList } from "components";
 import styles from "./ViewBoard.module.css";
 import { authDelete } from "util";
 
@@ -59,6 +59,32 @@ function ViewBoard() {
           alert("삭제 중 오류가 발생하였습니다.");
       }
   }
+
+function sanitizeHtml(html) {
+  const tempDiv = document.createElement("div");
+  tempDiv.innerHTML = html;
+
+  const tagsToRemove = ["script", "iframe", "object", "embed"];
+  const attrsToRemove = ["onerror", "onload", "onclick", "onmouseover"];
+
+  tagsToRemove.forEach(tag => {
+    const elements = tempDiv.getElementsByTagName(tag);
+    while (elements.length > 0) {
+      elements[0].remove();
+    }
+  });
+
+  const allElements = tempDiv.getElementsByTagName("*");
+  for (let el of allElements) {
+    attrsToRemove.forEach(attr => {
+      if (el.hasAttribute(attr)) {
+        el.removeAttribute(attr);
+      }
+    });
+  }
+
+  return tempDiv.innerHTML;
+}
   //===========================================================================
   //3.event 함수
   //=========================================================================== 
@@ -105,7 +131,7 @@ function ViewBoard() {
         <div className={styles.title}>
           {boardData.title}
         </div>
-        <div className={styles.content} dangerouslySetInnerHTML={{ __html: boardData.content }}>
+        <div className={styles.content} dangerouslySetInnerHTML={{ __html: sanitizeHtml(boardData.content || "") }}>
           {/* {boardData.content} */}
         </div>
       </div>
@@ -163,6 +189,9 @@ function ViewBoard() {
           )}
         </div>
       )}
+      <CommentList>
+        
+      </CommentList>
       <Confirm isOpen={delIsOpen} onConfirm={deleteBoard}  onClose={() => setDelIsOpen(false)} message={`정말 게시글을 삭제 하시겠습니까?`}>
       </Confirm>
     </div>
