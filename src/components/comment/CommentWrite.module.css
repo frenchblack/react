@@ -1,0 +1,22 @@
+.write_div {
+    display: flex;
+    height: 60px;
+    padding: 10px 0 ;
+    margin : 10px 0 10px 0 ;
+    gap: 5px;
+    /* background-color: #f2f2f2; */
+}
+
+.write_area {
+    flex : 30; 
+    height: auto;
+    resize: none;
+    font-size: 16px;
+    border: 1px solid #ccc;
+}
+
+.write_btn {
+    flex: 1;
+    height: 100%;
+    font-size: 16px;
+}

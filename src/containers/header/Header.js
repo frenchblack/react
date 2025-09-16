@@ -84,7 +84,7 @@ function Header() {
         <div>
             <ul className={`${styles.h_body}`}>
                 <div className={ styles.home }>
-                    <Link to="/"><h1 className={ styles.h_h1 }>React</h1></Link>
+                    <Link to="/"><div className={styles.home_img}></div></Link>
                 </div>
                 <div className={ styles.menuList }>
 
@@ -108,11 +108,11 @@ function Header() {
                 </div>
                 <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("header_etc") } } onMouseLeave={ meneMouseleave } >
                 {/* <div className={ styles.slide } > */}
-                    <div className={ styles.ect }><h4>기타</h4></div>
+                    <div className={ styles.ect }></div>
                     {_isAuthorization ? (
                         <ul style={{textAlign : "right", right: "-30px"} } className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>
                             <li key="auth_1">프로필</li>
-                            <li key="auth_2" onClick={ logoutOnClick }>로그아웃</li>
+                            <li style={{cursor : "pointer", color : "black"}} key="auth_2" onClick={ logoutOnClick }>로그아웃</li>
                             <li key="auth_3"><Link to={ "/blog/" + localStorage.getItem("user_id") } onClick={meneMouseleave}>내 블로그</Link></li>
                             <li key="auth_4"><Link to="/menu" onClick={meneMouseleave}>메뉴관리</Link></li>
                         </ul>

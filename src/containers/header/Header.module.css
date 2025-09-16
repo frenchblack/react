@@ -47,6 +47,17 @@
     margin-right: 50px;
 }
 
+.home_img {
+    position: relative;
+    /* right: 0px; */
+    width: 170px;
+    height: 40px;
+    background-image: url("/src/img/icon/home.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .h_body a {
     /* color: white; */
     color: black;
@@ -79,8 +90,9 @@
     right: 0px;
     width: 40px;
     height: 40px;
-    /* background-image: url("/src/img/icon/menu.svg"); */
+    background-image: url("/src/img/icon/menu_black.svg");
     background-size: cover;
+    cursor: pointer;
 }
 
 /* .h_body .ect:hover .slide{

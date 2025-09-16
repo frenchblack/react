@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {CommentItem} from './CommentItem';
 import {CommentWrite} from './CommentWrite';
+import styles from "./CommentList.module.css";
 
 function CommentList({ boardId }) {
   const [commentList, setCommentList] = useState([]);
@@ -10,7 +11,8 @@ function CommentList({ boardId }) {
   }, [boardId]);
 
   return (
-    <div>
+    <div className={styles.comment_div}>
+      <h3 className={styles.comment_cnt} >{`댓글 [${commentList.length}]`}</h3>
       <CommentWrite boardId={boardId} parentId={null} onSuccess={() => {}} />
 
       {commentList
