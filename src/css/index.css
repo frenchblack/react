@@ -114,6 +114,20 @@ input:focus {
   color: black;
 }
 
+.linkBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;         /* 손가락 포인터 */
+  text-decoration: none;   /* 기본은 밑줄 없음 */
+}
+
+.linkBtn:hover {
+  text-decoration: underline;     /* 호버시 밑줄 */
+}
+
 .blackLink {
     border: 1px solid #000;
     background-color: black;

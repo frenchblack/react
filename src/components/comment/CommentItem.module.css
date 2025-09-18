@@ -1,0 +1,48 @@
+.item_div{
+    margin: 20px 0;
+}
+.comment_div{ 
+    display: flex;
+    gap: 10px;
+}
+
+.user_profile {
+  width: 50px;          /* 원하는 크기 */
+  height: 50px;
+  border-radius: 50%;   /* 원형으로 */
+  object-fit: cover;    /* 이미지가 찌그러지지 않고 꽉 차게 */
+  border: 1px solid #ddd; /* 선택: 테두리 */
+}
+
+.content_div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.bottom_div{
+    gap: 10px;
+    display: flex;
+    align-content: center;
+}
+
+.option {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    justify-content: space-between;
+    /* height: 100%; */
+}
+
+.like_div{
+    display: flex;
+    justify-content: center;
+    /* flex: 1; */
+    /* margin-top: auto; */
+}
+
+.thumb {
+  width: 25px;          /* 원하는 크기 */
+  height: 25px;
+
+}

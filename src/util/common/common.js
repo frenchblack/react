@@ -59,6 +59,29 @@ export const utilSetParam = (searchParams, setSearchParams, newParams, defaultPa
     setSearchParams(sParams);
 }
 
+// 시간 변경
+export function formatRelativeTime(dateStr) {
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diff = Math.floor((now - date) / 1000); // 초 단위 차이
+
+  if (diff < 60) {
+    return `${diff}초 전`;
+  } else if (diff < 60 * 60) {
+    const minutes = Math.floor(diff / 60);
+    return `${minutes}분 전`;
+  } else if (diff < 60 * 60 * 24) {
+    const hours = Math.floor(diff / 3600);
+    return `${hours}시간 전`;
+//   } else if (diff < 60 * 60 * 24 * 30) {
+    // const days = Math.floor(diff / (3600 * 24));
+    // return `${days}일 전`;
+  } else {
+    return dateStr;
+    // return date.toLocaleDateString("ko-KR"); // 한 달 이상은 날짜로
+  }
+}
+
 //클라이언트 내 로그인 중인지 확인.
 export const isLogin = (context) => {
     const token = getCookie("Authorization");

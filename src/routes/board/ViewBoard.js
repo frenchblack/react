@@ -189,7 +189,7 @@ function sanitizeHtml(html) {
           )}
         </div>
       )}
-      <CommentList>
+      <CommentList boardId={ board_no }>
         
       </CommentList>
       <Confirm isOpen={delIsOpen} onConfirm={deleteBoard}  onClose={() => setDelIsOpen(false)} message={`정말 게시글을 삭제 하시겠습니까?`}>
