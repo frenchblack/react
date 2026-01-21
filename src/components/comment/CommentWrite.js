@@ -25,6 +25,7 @@ function CommentWrite({ boardId, parentId, onSuccess }) {
       const res = await authPost("/comment/write", {
           board_no: boardId,
           comment_content: content.trim(),
+          p_comment_no: parentId ? parentId : null
       });
 
       setContent("");

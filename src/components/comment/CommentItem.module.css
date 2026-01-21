@@ -140,3 +140,26 @@
   font-size: 14px;
   padding: 4px 6px;
 }
+
+.reply_wrap {
+  margin-top: 10px;
+  margin-left: 32px;
+  padding-left: 12px;
+  border-left: 2px solid #e5e5e5;
+}
+
+.reply_list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply_paging {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
