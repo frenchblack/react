@@ -26,9 +26,9 @@ function App() {
               <Route element={<AdminRoute />}>
                 <Route path="/menu" element={<Menu />} />
               </Route>
-          <Route path="/freeBoard" element={ <FreeBoard /> } />
-          <Route path=":base/WriteBoard" element={<WriteBoard />} />
-          <Route path=":base/ViewBoard" element={<ViewBoard />} />
+          <Route path="/board/:menu_cd" element={ <FreeBoard /> } />
+          <Route path="/board/:menu_cd/WriteBoard" element={ <WriteBoard /> } />
+          <Route path="/board/:menu_cd/ViewBoard" element={ <ViewBoard /> } />
         </Route>
         <Route path="/blog/*" element={ <BlogRoute /> } >
             <Route path=":bloger_id" element={ <Blog /> } />

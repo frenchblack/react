@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom"
-import { nonAuthGet, BASE_URL, AuthContext} from "util";
+import { nonAuthGet, BASE_URL, AuthContext, getMenuCd, getMenuName, MenuContext} from "util";
 import { Confirm, CommentList } from "components";
 import styles from "./ViewBoard.module.css";
 import { authDelete } from "util";
@@ -11,8 +11,9 @@ function ViewBoard() {
   //===========================================================================
   const [searchParams, setSearchParams] = useSearchParams();
   const pathNm = useLocation().pathname;
-  const menuName = searchParams.get("menu_nm");
-  const menuCd = searchParams.get("menu_cd");
+  const menuList = useContext(MenuContext).menuList;
+  const menuName = getMenuName(menuList, pathNm);
+  const menuCd = getMenuCd(menuList, pathNm);
   const board_no = searchParams.get("board_no");
   const upPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
   const navigator = useNavigate();
@@ -145,7 +146,7 @@ function sanitizeHtml(html) {
       </div>
       {(boardData.writer == localStorage.getItem("user_id")) && (
         <div className={styles.edit} >
-          <Link to={`${upPath}/WriteBoard?menu_cd=${menuCd}&menu_nm=${menuName}&board_no=${boardData.board_no}`} className={`whiteBtn`}>수정</Link>
+          <Link to={`${upPath}/WriteBoard?board_no=${boardData.board_no}`} className={`whiteBtn`}>수정</Link>
           <label className={`whiteBtn`} onClick={() => setDelIsOpen(true)}>삭제</label>
         </div>
       )}

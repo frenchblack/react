@@ -29,18 +29,24 @@ export const onChkChange = (e, setter, func, funcObj) => {
     }
 }
 
-//메뉴명 찾기
+//메뉴명 찾기 (하위 경로 포함)
 export const getMenuName = (menuList , url) => {
-    const menu = menuList?.find((menu)=>menu.menu_url == url);
+    const menu = menuList
+        ?.filter((m) => m?.menu_url)
+        ?.sort((a, b) => (b.menu_url.length - a.menu_url.length)) // 긴 URL 우선
+        ?.find((m)=> url.startsWith(m.menu_url));
 
-    return menu?menu["menu_nm"]: null;
+    return menu ? menu["menu_nm"] : null;
 }
 
-//메뉴cd 찾기
+//메뉴cd 찾기 (하위 경로 포함)
 export const getMenuCd = (menuList , url) => {
-    const menu = menuList?.find((menu)=>menu.menu_url == url);
+    const menu = menuList
+        ?.filter((m) => m?.menu_url)
+        ?.sort((a, b) => (b.menu_url.length - a.menu_url.length))
+        ?.find((m)=> url.startsWith(m.menu_url));
 
-    return menu?menu["menu_cd"]: null;
+    return menu ? menu["menu_cd"] : null;
 }
 
 //메뉴cd 찾기

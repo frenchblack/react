@@ -15,8 +15,9 @@ function WriteBoard() {
   //===========================================================================
   const [searchParams, setSearchParams] = useSearchParams();
   const pathNm = useLocation().pathname;
-  const menuName = searchParams.get("menu_nm");
-  const menuCd = searchParams.get("menu_cd");
+  const menuList = useContext(MenuContext).menuList;
+  const menuName = getMenuName(menuList, pathNm);
+  const menuCd = getMenuCd(menuList, pathNm);
   const paramBoard_no = searchParams.get("board_no");
   const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
   const navigator = useNavigate();
@@ -114,22 +115,32 @@ function WriteBoard() {
   //===========================================================================
   //2.내부 함수
   //===========================================================================
-  useEffect(() => {
+  useEffect(async() => {
     chkLogin(_setIsAuthorizationHandler, navigator); //현재 클라이언트 권한이 유효한지 서버와 통신해서 확인
+    if (isEdit) await loadEditData();
     getCategoryList();
-    if (isEdit) loadEditData();
-  }, []);
+    
+  }, [menuCd]);
 
   useEffect(() => {
-    if(!category && categoryList.length > 0) {
-      setCategory(categoryList[0].category_cd);
-      getSubCategoryList(categoryList[0].category_cd);
+  //0이면 아직 로드 전
+    if(categoryList.length > 0){
+      var cate = category;
+      //신규 생성일 경우
+      if(!category) {
+        cate = categoryList[0].category_cd;
+        setCategory(categoryList[0].category_cd);
+      }
+      //신규일 경우 첫번째 로딩, 신규가 아닐경우 category 값 로딩
+      getSubCategoryList(cate);
     }
   }, [categoryList]);
 
   useEffect(() => {
-    if(categoryList.length > 0) {
-      setSubCategory(categoryList[0].category_cd);
+    if(subCategoryList.length > 0) {
+      setSubCategory(subCategoryList[0].category_cd);
+    } else {
+      // setSubCategory(null);
     }
   }, [subCategoryList]);
 
@@ -137,7 +148,8 @@ function WriteBoard() {
   const getCategoryList = async () => {
       try {
           const list = await nonAuthGet(`/getCategories?menu_cd=${menuCd}`);
-          setCategoryList(list.data);
+          // if(list.data.length > 0)
+            setCategoryList(list.data);
       } catch(e) {
 
       }
@@ -146,7 +158,11 @@ function WriteBoard() {
   const getSubCategoryList = async (p_cd) => {
       try {
           const list = await nonAuthGet(`/getSubCategories?p_cd=${p_cd}`);
-          setSubCategoryList(list.data);
+          // if(list.data.length > 0) {
+            setSubCategoryList(list.data);
+          // } else{
+          //   setSubCategoryList([]);
+          // }
       } catch(e) {
 
       }
@@ -204,7 +220,7 @@ function WriteBoard() {
 
   const afterComplete = () => {
     const upperPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
-    navigator(upperPath + `/ViewBoard?board_no=${insertNo}&menu_cd=${menuCd}&menu_nm=${menuName}`);
+    navigator(`${upperPath}/ViewBoard?board_no=${insertNo}`);
   }
 
   const parsingFormData = () => {

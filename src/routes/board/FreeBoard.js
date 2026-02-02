@@ -235,7 +235,7 @@ function FreeBoard() {
           <div className={styles.listItem5}>조회</div>
         </div>
         {boardList?.map((board) =>(
-          <Link to={`${pathNm}/ViewBoard?board_no=${board.board_no}&menu_cd=${menuCd}&menu_nm=${menuName}`}>
+          <Link to={`ViewBoard?board_no=${board.board_no}`}>
             <div key={board.board_no} className={styles.list}>
               <div className={styles.listItem1} >{board.board_no}</div>
               <div className={styles.listItem2} >{board.category_nm}</div>
@@ -276,7 +276,7 @@ function FreeBoard() {
           </button>
         </div>
         {isLogin(_isAuthorization) &&
-        <Link to= {`${pathNm}/WriteBoard?menu_cd=${menuCd}&menu_nm=${menuName}`} className={`blackLink ${styles.writeBtn}`} >
+        <Link to= {`WriteBoard`} className={`blackLink ${styles.writeBtn}`} >
             글 쓰기
         </Link>
         }
