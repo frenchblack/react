@@ -21,12 +21,11 @@ function WriteBoard() {
   const paramBoard_no = searchParams.get("board_no");
   const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
   const navigator = useNavigate();
-  const [modalIsOpen, setModalIsOpen] = useState(); 
+  const [modalIsOpen, setModalIsOpen] = useState();
   const quillRef = useRef();
   const tempUuidRef = useRef(uuidv4()); //이미지 업로드 temp폴더 명
   const isEdit = !!paramBoard_no;
 
-  // ReactQuill.Quill.register('modules/imageResize', ImageResize);
   if (
     ReactQuill.Quill &&
     typeof ReactQuill.Quill.register === "function" &&
@@ -34,15 +33,16 @@ function WriteBoard() {
   ) {
     ReactQuill.Quill.register('modules/imageResize', ImageResize);
   }
+
   const imageHandler = () => {
     const input = document.createElement("input");
-    input.setAttribute("type", "file"); 
+    input.setAttribute("type", "file");
     input.setAttribute("accept", "image/*");
-    input.click(); 
+    input.click();
 
     input.onchange = async () => {
       const file = input.files?.[0];
-      if (!file || !quillRef.current) return; 
+      if (!file || !quillRef.current) return;
 
       const formData = new FormData();
       formData.append("file", file);
@@ -52,7 +52,7 @@ function WriteBoard() {
           `/boadUpload/temp/${tempUuidRef.current}`
         , formData
         , _setIsAuthorizationHandler
-        , navigator 
+        , navigator
         );
 
         const imageUrl = BASE_URL + response.data.url; // ex: /images/temp/uuid/파일.jpg
@@ -65,10 +65,11 @@ function WriteBoard() {
       }
     };
   }
+
   const modules = useMemo(() => {
     return {
       toolbar: {
-        container : [
+        container: [
           [{ 'header': [1, 2, 3, false] }],
           [{ 'font': [] }],
           [{ 'size': ['small', false, 'large', 'huge'] }],
@@ -84,7 +85,7 @@ function WriteBoard() {
         },
       },
       imageResize: {
-        modules: ['Resize', 'DisplaySize'], 
+        modules: ['Resize', 'DisplaySize'],
       },
     };
   }, []);
@@ -99,88 +100,99 @@ function WriteBoard() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
+
+  // ✅ 상위/하위 네이밍 교체
+  const [pCategory, setPCategory] = useState("");     // 상위 (기존 category)
+  const [category, setCategory] = useState("");       // 하위(저장값) (기존 subCategory)
+
   const [writer, setWriter] = useState("");
-  const [categoryList, setCategoryList] = useState([]);
-  const [subCategoryList, setSubCategoryList] = useState([]);
+
+  // ✅ 리스트 네이밍 교체
+  const [pCategoryList, setPCategoryList] = useState([]); // 상위 리스트 (기존 categoryList)
+  const [categoryList, setCategoryList] = useState([]);   // 하위 리스트 (기존 subCategoryList)
+
   const [insertNo, setInsertNo] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [loadFileList, setLoadFileList] = useState([]);
   const [deleteFileIds, setDeleteFileIds] = useState([]);
 
-
-
-
   //===========================================================================
   //2.내부 함수
   //===========================================================================
-  useEffect(async() => {
+  useEffect(async () => {
     chkLogin(_setIsAuthorizationHandler, navigator); //현재 클라이언트 권한이 유효한지 서버와 통신해서 확인
     if (isEdit) await loadEditData();
-    getCategoryList();
-    
+    getPCategoryList();
   }, [menuCd]);
 
+  // ✅ 상위 로딩되면: 기본 상위 세팅 + 하위 불러오기
   useEffect(() => {
-  //0이면 아직 로드 전
-    if(categoryList.length > 0){
-      var cate = category;
-      //신규 생성일 경우
-      if(!category) {
-        cate = categoryList[0].category_cd;
+    if (pCategoryList.length > 0) {
+      let pCate = pCategory;
+
+      // 신규 생성일 경우
+      if (!pCategory) {
+        pCate = pCategoryList[0].category_cd;
+        setPCategory(pCategoryList[0].category_cd);
+      }
+
+      getCategoryList(pCate);
+    }
+  }, [pCategoryList]);
+
+  // ✅ 하위 로딩되면: 신규/상위 변경시 기본 하위 세팅
+  useEffect(() => {
+    if (categoryList.length > 0) {
+      // 수정모드에서 loadEditData로 category(하위)가 이미 세팅된 경우엔 유지
+      // 신규/상위 변경 시엔 첫번째 하위로 세팅
+      if (!isEdit || !category) {
         setCategory(categoryList[0].category_cd);
       }
-      //신규일 경우 첫번째 로딩, 신규가 아닐경우 category 값 로딩
-      getSubCategoryList(cate);
+    } else {
+      // 하위가 아예 없는 상위라면 category 비워둠(저장 막기)
+      setCategory("");
     }
   }, [categoryList]);
 
-  useEffect(() => {
-    if(subCategoryList.length > 0) {
-      setSubCategory(subCategoryList[0].category_cd);
-    } else {
-      // setSubCategory(null);
+  // ✅ 상위 카테고리 불러오기
+  const getPCategoryList = async () => {
+    try {
+      const list = await nonAuthGet(`/getCategories?menu_cd=${menuCd}`);
+      setPCategoryList(list.data || []);
+    } catch (e) {
+
     }
-  }, [subCategoryList]);
-
-  //카테고리 불러오기
-  const getCategoryList = async () => {
-      try {
-          const list = await nonAuthGet(`/getCategories?menu_cd=${menuCd}`);
-          // if(list.data.length > 0)
-            setCategoryList(list.data);
-      } catch(e) {
-
-      }
   }
 
-  const getSubCategoryList = async (p_cd) => {
-      try {
-          const list = await nonAuthGet(`/getSubCategories?p_cd=${p_cd}`);
-          // if(list.data.length > 0) {
-            setSubCategoryList(list.data);
-          // } else{
-          //   setSubCategoryList([]);
-          // }
-      } catch(e) {
+  // ✅ 하위 카테고리 불러오기 (p_category_cd 기준)
+  const getCategoryList = async (p_category_cd) => {
+    try {
+      const list = await nonAuthGet(`/getSubCategories?p_cd=${p_category_cd}`);
+      setCategoryList(list.data || []);
+    } catch (e) {
 
-      }
+    }
   }
 
+  // ✅ 수정 데이터 로드
   const loadEditData = async () => {
     try {
-      const result = await authGet(`/getBoradDtail?board_no=${paramBoard_no}`, _setIsAuthorizationHandler, navigator );
+      const result = await authGet(`/getBoradDtail?board_no=${paramBoard_no}`, _setIsAuthorizationHandler, navigator);
       console.log("load complete");
       const data = result.data.board;
+
       setTitle(data.title);
       setContent(data.content);
+
+      // ✅ DB에서 이제 p_category_cd / category_cd 로 내려온다는 가정
+      // - p_category_cd : 상위
+      // - category_cd   : 하위(leaf)
+      setPCategory(data.p_category_cd);
       setCategory(data.category_cd);
-      setSubCategory(data.sub_category_cd); 
+
       setWriter(data.writer);
       setLoadFileList(result.data.file || []);
-
-    } catch(e) {
+    } catch (e) {
       alert("저장된글을 불러오는데 실패하였습니다.");
       navigator(-1);
     }
@@ -190,30 +202,30 @@ function WriteBoard() {
     const formData = parsingFormData();
 
     try {
-        const result = await authPost(`/postBoard`, formData,  _setIsAuthorizationHandler, navigator );
-        if(result.data < 0) {
-          alert("새 글 등록에 실패하였습니다.");
-          return;
-        }
-        setInsertNo(result.data);
-        setModalIsOpen(true);
-    } catch(e) {
+      const result = await authPost(`/postBoard`, formData, _setIsAuthorizationHandler, navigator);
+      if (result.data < 0) {
+        alert("새 글 등록에 실패하였습니다.");
+        return;
+      }
+      setInsertNo(result.data);
+      setModalIsOpen(true);
+    } catch (e) {
       alert("새 글 등록에 실패하였습니다...");
     }
   }
 
-  const updateBorad = async() => {
+  const updateBorad = async () => {
     const formData = parsingFormData();
 
     try {
-        const result = await authPut(`/updateBoard`, formData,  _setIsAuthorizationHandler, navigator );
-        if(result.data < 0) {
-          alert("새 글 등록에 실패하였습니다.");
-          return;
-        }
-        setInsertNo(result.data);
-        setModalIsOpen(true);
-    } catch(e) {
+      const result = await authPut(`/updateBoard`, formData, _setIsAuthorizationHandler, navigator);
+      if (result.data < 0) {
+        alert("새 글 등록에 실패하였습니다.");
+        return;
+      }
+      setInsertNo(result.data);
+      setModalIsOpen(true);
+    } catch (e) {
       alert("새 글 등록에 실패하였습니다...");
     }
   }
@@ -226,10 +238,12 @@ function WriteBoard() {
   const parsingFormData = () => {
     const formData = new FormData();
 
+    // ✅ 여기서 실수하면 진짜 ㅈ됨 → leaf는 category_cd로 저장 고정
     const body = {
         "title" : title
       , "content" : content
       , "writer" : localStorage.getItem("user_id")
+      , "p_category_cd" : pCategory
       , "category_cd" : category
       , "menu_cd" : menuCd
       , "uuid" : tempUuidRef.current
@@ -245,7 +259,7 @@ function WriteBoard() {
       formData.append("files", file);
     });
 
-    if(isEdit) {
+    if (isEdit) {
       formData.append(
         "deleteFiles",
         new Blob([JSON.stringify(deleteFileIds)], { type: "application/json" })
@@ -257,28 +271,31 @@ function WriteBoard() {
 
   //===========================================================================
   //3.event 함수
-  //===========================================================================  
+  //===========================================================================
   const handleSubmit = () => {
     if (title.trim() === "" || content.trim() === "") {
       alert("제목과 내용을 입력해주세요.");
       return;
     }
 
-    if (subCategory == "" || subCategory == null) {
+    // ✅ 하위(leaf) 없으면 저장 막기
+    if (category === "" || category == null) {
       alert("카테고리를 설정 해 주세요.");
       return;
     }
 
-    if(isEdit){
+    if (isEdit) {
       updateBorad();
     } else {
       postBoard();
     }
   };
 
-  const changeCategory = (value) => {
-    setCategory(value);
-    getSubCategoryList(value);
+  // ✅ 상위 변경 시: 상위 상태 변경 + 하위 목록 재조회
+  const changePCategory = (value) => {
+    setPCategory(value);
+    setCategory("");          // 상위 바뀌면 하위 선택 초기화(안전)
+    getCategoryList(value);
   }
 
   const modalOnClose = () => {
@@ -290,41 +307,46 @@ function WriteBoard() {
     setFileList((prev) => [...prev, ...files]);
   };
 
-  // 파일 삭제
   const removeFile = (index) => {
     setFileList((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeOrifinFile = (file) => {
-    if(deleteFileIds.includes(file)) {
-       setDeleteFileIds((prev) => prev.filter((item) => item.file_id !== file.file_id));
+    if (deleteFileIds.includes(file)) {
+      setDeleteFileIds((prev) => prev.filter((item) => item.file_id !== file.file_id));
     } else {
       setDeleteFileIds((prev) => [...prev, file]);
     }
   }
+
   //===========================================================================
   //4.컴포넌트 return
-  //=========================================================================== 
+  //===========================================================================
   return (
-    <div className={`${ styles.Home } container`}>
-      <h1 className={ `menu_nm` }>
+    <div className={`${styles.Home} container`}>
+      <h1 className={`menu_nm`}>
         <Link to={pathNm.substring(0, pathNm.lastIndexOf("/"))}>
           {`${menuName} 글 쓰기`}
         </Link>
       </h1>
+
       <div className={styles.form}>
         <div className={styles.category_div} >
-          <select value={category} onChange={e => changeCategory(e.target.value)} className={styles.searchSelect}>
-            {categoryList.map(cat => (
+          {/* ✅ 상위 */}
+          <select value={pCategory} onChange={e => changePCategory(e.target.value)} className={styles.searchSelect}>
+            {pCategoryList.map(cat => (
               <option key={cat.category_cd} value={cat.category_cd}>{cat.category_nm}</option>
             ))}
           </select>
-          <select value={subCategory} onChange={e => setSubCategory(e.target.value)} className={styles.searchSelect}>
-            {subCategoryList.map(sub => (
+
+          {/* ✅ 하위(저장값) */}
+          <select value={category} onChange={e => setCategory(e.target.value)} className={styles.searchSelect}>
+            {categoryList.map(sub => (
               <option key={sub.category_cd} value={sub.category_cd}>{sub.category_nm}</option>
             ))}
           </select>
         </div>
+
         <input
           className={styles.title}
           type="text"
@@ -332,7 +354,8 @@ function WriteBoard() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <div className={styles.editorWrapper }>
+
+        <div className={styles.editorWrapper}>
           <ReactQuill
             ref={quillRef}
             className={styles.content}
@@ -343,30 +366,42 @@ function WriteBoard() {
             placeholder="내용을 입력하세요"
           />
         </div>
+
         <div className={styles.file_container}>
           <label className={`whiteBtn ${styles.file_upload}`} htmlFor="file-upload" style={{ cursor: 'pointer' }}>
             📎 파일 첨부
           </label>
           <input id="file-upload" type="file" multiple onChange={handleFileChange} style={{ display: 'none' }} />
+
           <div className={styles.file_list}>
             {loadFileList.map((file) => (
               <div className={styles.flie_item} key={file.file_id}>
-                <label>{file.origin_nm}</label> <button className={`${deleteFileIds.some((item) => item.file_id == file.file_id)? "blackBtn" : "whiteBtn"} ${styles.file_delete}`} onClick={() => removeOrifinFile(file)}>{deleteFileIds.some((item) => item.file_id == file.file_id) ? "삭제 취소" : "삭제"}</button>
+                <label>{file.origin_nm}</label>
+                <button
+                  className={`${deleteFileIds.some((item) => item.file_id == file.file_id) ? "blackBtn" : "whiteBtn"} ${styles.file_delete}`}
+                  onClick={() => removeOrifinFile(file)}
+                >
+                  {deleteFileIds.some((item) => item.file_id == file.file_id) ? "삭제 취소" : "삭제"}
+                </button>
               </div>
             ))}
+
             {fileList.map((file, idx) => (
               <div className={styles.flie_item} key={idx}>
-                <label>{idx}_{file.name}</label> <button className={`whiteBtn ${styles.file_del}`} onClick={() => removeFile(idx)}>❌</button>
+                <label>{idx}_{file.name}</label>
+                <button className={`whiteBtn ${styles.file_del}`} onClick={() => removeFile(idx)}>❌</button>
               </div>
             ))}
           </div>
         </div>
+
         <div className={styles.buttonBox}>
           <button className={`blackBtn ${styles.create}`} onClick={handleSubmit}>
             등록
           </button>
         </div>
       </div>
+
       <Modal isOpen={modalIsOpen}>
         <p className={styles.modal_text}>
           글 작성에 성공 하였습니다.
