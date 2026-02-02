@@ -7,6 +7,27 @@ function Header() {
     const [menuList, setMenuList] = useState([]);
     const [childMenuList, setChildMenuList] = useState([]);
     const [openMenuCd, setOpenMenuCd] = useState(null);
+    const roleCd = localStorage.getItem("role_cd");
+    const isAdmin = roleCd === "ROLE_ADMIN";
+
+    const ADMIN_MENU_CD = "__ADMIN__";
+
+    const adminMenu = {
+        menu_cd: ADMIN_MENU_CD
+    , menu_nm: "관리자"
+    , menu_url: null
+    };
+
+    const adminChildMenus = [
+    { menu_cd: "__ADMIN_MENU__", menu_nm: "메뉴관리", menu_url: "/menu", p_cd: ADMIN_MENU_CD }
+    , { menu_cd: "__ADMIN_USER__", menu_nm: "유저관리", menu_url: "/admin/users", p_cd: ADMIN_MENU_CD }
+    , { menu_cd: "__ADMIN_LOG__",  menu_nm: "관리로그", menu_url: "/admin/logs",  p_cd: ADMIN_MENU_CD }
+    ];
+
+    const renderMenuList =
+        isAdmin
+            ? [ ...menuList, adminMenu ]
+            : menuList;
     
     const slideRef = useRef();
     const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
@@ -51,10 +72,15 @@ function Header() {
             }
 
             childObj[parent].push(...childList?.filter((child)=>child.p_cd == parent));
-          });
+        });
+
+        // ✅ 관리자 하위메뉴 추가(관리자만)
+        if (isAdmin) {
+            childObj[ADMIN_MENU_CD] = adminChildMenus;
+        }
         
         setChildMenuList(childObj);
-      }, [menuList]);
+    }, [menuList]);
 
     //로그아웃
     const logoutOnClick = async () => {
@@ -89,11 +115,11 @@ function Header() {
                 <div className={ styles.menuList }>
 
                     
-                    {menuList.map((menu) => ( 
+                    {renderMenuList.map((menu) => ( 
                         // <div key={ menu.menu_cd } className={ styles.slide } onMouseEnter={ () => { meneMouseenter("200px") } } onMouseLeave={ meneMouseleave } >
                         <div key={ menu.menu_cd } className={ styles.slide }  onMouseEnter={ () => { meneMouseenter(menu.menu_cd) } } onMouseLeave={ meneMouseleave }>
                             {/* ------------lvl1--------------- */}
-                            <li className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to="/">{ menu.menu_nm }</Link></h4></li>
+                            <li className={ [styles.h_list, 'increaseOpacity'].join(' ') } ><h4><Link to={ menu.menu_url || "#" }>{ menu.menu_nm }</Link></h4></li>
                             {childMenuList[menu.menu_cd]?.length > 0 && (
                                 <ul style={{left : "0"}}className={`${styles.slideItem} ${openMenuCd === menu.menu_cd ? styles.show : styles.hide}`}>
                                     {/* ------------lvl2--------------- */}
@@ -110,13 +136,16 @@ function Header() {
                 {/* <div className={ styles.slide } > */}
                     <div className={ styles.ect }></div>
                     {_isAuthorization ? (
-                        <ul style={{textAlign : "right", right: "-30px"} } className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>
+                        <ul style={{textAlign : "right", right: "-30px"}}
+                            className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>
+                            
                             <li key="auth_1">프로필</li>
                             <li style={{cursor : "pointer", color : "black"}} key="auth_2" onClick={ logoutOnClick }>로그아웃</li>
-                            <li key="auth_3"><Link to={ "/blog/" + localStorage.getItem("user_id") } onClick={meneMouseleave}>내 블로그</Link></li>
-                            <li key="auth_4"><Link to="/menu" onClick={meneMouseleave}>메뉴관리</Link></li>
+                            <li key="auth_3">
+                            <Link to={ "/blog/" + localStorage.getItem("user_id") } onClick={meneMouseleave}>내 블로그</Link>
+                            </li>
                         </ul>
-                    ) : (
+                        ) : (
                         <ul style={{textAlign : "right", right: "-30px"} } className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>
                             <li key="nonauth_1"><Link to="/login" onClick={meneMouseleave}>로그인</Link></li>
                             <li key="nonauth_2"><Link to="/join" onClick={meneMouseleave}>회원가입</Link></li>

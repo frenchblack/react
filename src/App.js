@@ -6,10 +6,11 @@ import Join from "routes/common/Join"
 import Blog from "routes/Blog";
 import HeaderRoute from "routes/HeaderRoute";
 import BlogRoute from "routes/BlogRoute";
-import Menu from "routes/common/Menu";
+import Menu from "routes/manage/Menu";
 import FreeBoard from "routes/board/FreeBoard";
 import WriteBoard from "routes/board/WriteBoard";
 import ViewBoard from "routes/board/ViewBoard";
+import AdminRoute from "routes/AdminRoute";
 import { RouteTracker } from "components";
 
 function App() {
@@ -22,7 +23,9 @@ function App() {
           <Route path="/" element={ <Home /> } />
           <Route path="/login" element={ <Login /> } />
           <Route path="/join" element={ <Join /> } />
-          <Route path="/menu" element={ <Menu /> } />
+              <Route element={<AdminRoute />}>
+                <Route path="/menu" element={<Menu />} />
+              </Route>
           <Route path="/freeBoard" element={ <FreeBoard /> } />
           <Route path=":base/WriteBoard" element={<WriteBoard />} />
           <Route path=":base/ViewBoard" element={<ViewBoard />} />

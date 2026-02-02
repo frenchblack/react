@@ -41,6 +41,7 @@ function Login() {
             setCookieRefreshToken(result.data.refreshtoken);
             _setIsAuthorizationHandler(true);
             localStorage.setItem('user_id', body.user_id);
+            localStorage.setItem('role_cd', result.data.role_cd);
             // cusAxios.defaults.headers.common["Authorization"] = `Bearer ${result.data.token}`; //이제 인증get, post에서 체크하기때문에 없어도 됨.
             if ( saveId ) {
                 setCookie("saveId", id, { maxAge : (60 * 60 * 24 * 30) });

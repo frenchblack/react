@@ -119,6 +119,7 @@ export const comm_logout = ( setContext ) => {
     removeCookie("Refresh");
     setContext(false);
     localStorage.removeItem("user_id");
+    localStorage.removeItem("role_cd");
     cusAxios.defaults.headers.common["Authorization"] = ``;
 }
 
