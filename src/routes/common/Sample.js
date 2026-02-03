@@ -17,7 +17,9 @@ function Sample() {
   //=========================================================================== 
   return (
     <div className={`${ styles.Home } container`}>
-      
+      <h1 className={ styles.menu_nm }>
+        샘플
+      </h1>
     </div>
   );
 }

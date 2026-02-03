@@ -7,6 +7,7 @@ import Blog from "routes/Blog";
 import HeaderRoute from "routes/HeaderRoute";
 import BlogRoute from "routes/BlogRoute";
 import Menu from "routes/manage/Menu";
+import Category from "routes/manage/Category";
 import FreeBoard from "routes/board/FreeBoard";
 import WriteBoard from "routes/board/WriteBoard";
 import ViewBoard from "routes/board/ViewBoard";
@@ -23,9 +24,10 @@ function App() {
           <Route path="/" element={ <Home /> } />
           <Route path="/login" element={ <Login /> } />
           <Route path="/join" element={ <Join /> } />
-              <Route element={<AdminRoute />}>
-                <Route path="/menu" element={<Menu />} />
-              </Route>
+            <Route element={<AdminRoute />}>
+              <Route path="/menu" element={<Menu />} />
+              <Route path="/manageCategory" element={<Category />} />
+            </Route>
           <Route path="/board/:menu_cd" element={ <FreeBoard /> } />
           <Route path="/board/:menu_cd/WriteBoard" element={ <WriteBoard /> } />
           <Route path="/board/:menu_cd/ViewBoard" element={ <ViewBoard /> } />

@@ -20,6 +20,7 @@ function Header() {
 
     const adminChildMenus = [
     { menu_cd: "__ADMIN_MENU__", menu_nm: "메뉴관리", menu_url: "/menu", p_cd: ADMIN_MENU_CD }
+    , { menu_cd: "__ADMIN_CATEGORY__", menu_nm: "카테고리 관리", menu_url: "/manageCategory", p_cd: ADMIN_MENU_CD }
     , { menu_cd: "__ADMIN_USER__", menu_nm: "유저관리", menu_url: "/admin/users", p_cd: ADMIN_MENU_CD }
     , { menu_cd: "__ADMIN_LOG__",  menu_nm: "관리로그", menu_url: "/admin/logs",  p_cd: ADMIN_MENU_CD }
     ];

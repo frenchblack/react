@@ -102,6 +102,21 @@ input:focus {
   color: black;
 }
 
+.whiteBtn:disabled,
+.whiteBtn[disabled] {
+    cursor: default;
+    opacity: 0.55;
+    pointer-events: none;   /* ✅ hover 자체를 못 타게 */
+}
+
+.whiteBtn:disabled:hover,
+.whiteBtn[disabled]:hover {
+    /* ✅ hover 효과 무효화 (공통 hover가 있으면 덮어씀) */
+    background: inherit;
+    box-shadow: none;
+    transform: none;
+}
+
 .blackBtn {
     border: 1px solid #000;
     background-color: black;
@@ -112,6 +127,21 @@ input:focus {
 .blackBtn:hover {
   background-color: #f0f0f0;
   color: black;
+}
+
+.blackBtn:disabled,
+.blackBtn[disabled] {
+    cursor: default;
+    opacity: 0.55;
+    pointer-events: none;   /* ✅ hover 자체를 못 타게 */
+}
+
+.blackBtn:disabled:hover,
+.blackBtn[disabled]:hover {
+    /* ✅ hover 효과 무효화 (공통 hover가 있으면 덮어씀) */
+    background: inherit;
+    box-shadow: none;
+    transform: none;
 }
 
 .linkBtn {
@@ -126,6 +156,21 @@ input:focus {
 
 .linkBtn:hover {
   text-decoration: underline;     /* 호버시 밑줄 */
+}
+
+.linkBtn:disabled,
+.linkBtn[disabled] {
+    cursor: default;
+    opacity: 0.55;
+    pointer-events: none;   /* ✅ hover 자체를 못 타게 */
+}
+
+.linkBtn:disabled:hover,
+.linkBtn[disabled]:hover {
+    /* ✅ hover 효과 무효화 (공통 hover가 있으면 덮어씀) */
+    background: inherit;
+    box-shadow: none;
+    transform: none;
 }
 
 .blackLink {
