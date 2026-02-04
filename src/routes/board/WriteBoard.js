@@ -55,7 +55,7 @@ function WriteBoard() {
         , navigator
         );
 
-        const imageUrl = BASE_URL + response.data.url; // ex: /images/temp/uuid/파일.jpg
+        const imageUrl = BASE_URL + encodeURI(response.data.url); // ex: /images/temp/uuid/파일.jpg
 
         const editor = quillRef.current.getEditor();
         const range = editor.getSelection();
@@ -238,7 +238,7 @@ function WriteBoard() {
   const parsingFormData = () => {
     const formData = new FormData();
 
-    // ✅ 여기서 실수하면 진짜 ㅈ됨 → leaf는 category_cd로 저장 고정
+    
     const body = {
         "title" : title
       , "content" : content
