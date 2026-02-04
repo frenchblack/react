@@ -10,7 +10,8 @@ function Category() {
   const [loading, set_loading] = useState(true);
   const [error_msg, set_error_msg] = useState("");
   const [expanded_set, set_expanded_set] = useState(new Set()); // key = tree_key
-
+  
+  const [temp_row_key, set_temp_row_key] = useState(null);  
   const [selected_row, set_selected_row] = useState(null);
   const [detail_open_yn, set_detail_open_yn] = useState(false);
   const [detail_mode, set_detail_mode] = useState("VIEW"); // VIEW | EDIT | NEW
@@ -111,11 +112,16 @@ function Category() {
 
   const request_close_detail = () => {
     if (!is_dirty) {
+      cancel_temp_row_if_needed();
       close_detail();
       return;
     }
+
     const ok = window.confirm("변경사항이 존재합니다. 취소하고 닫을까요?");
-    if (ok) close_detail();
+    if (!ok) return;
+
+    cancel_temp_row_if_needed();
+    close_detail();
   };
 
   const on_click_row = (row) => {
@@ -238,7 +244,7 @@ function Category() {
       return;
     }
 
-    // dirty면 저장 후 진행 유도
+    // dirty면 저장 후 진행 유도(기존 유지)
     if (is_dirty) {
       const ok = window.confirm("변경사항이 있습니다. 저장 후 신규 생성을 진행할까요?");
       if (!ok) return;
@@ -247,30 +253,117 @@ function Category() {
       if (!saved) return;
     }
 
-    // NEW 폼 구성 규칙 (문서 기준)
-    // - lvl3 신규: 상위노드 메뉴코드 가져옴, p_cd는 null
-    // - lvl4 신규: menu_cd는 null, p_cd는 상위의 category_cd (또는 상위 p_cd 규칙은 서버에서 최종 확정)
+    //============================================================
+    // 1) 신규 row 생성 (기존 규칙 유지)
+    //============================================================
     const parent = selected_row;
-
     const new_lvl = parent.category_lvl + 1;
-    const next = {
-        category_cd: ""
+
+    // 같은 부모의 하위 row들 중 맨 아래 sort_order로 세팅
+    const siblings = list.filter((r) => r.p_tree_key === parent.tree_key);
+    const max_sort = siblings.length > 0
+      ? Math.max(...siblings.map(r => r.sort_order ?? 0))
+      : 0;
+
+    const temp_key = `TEMP-${Date.now()}`;
+
+    const new_row = {
+        tree_key: temp_key
+      , p_tree_key: parent.tree_key
+      , category_cd: ""
       , category_nm: ""
-      , sort_order: 99
+      , sort_order: max_sort + 1
       , use_yn: 1
-      , category_lvl: new_lvl
-      , menu_cd: (new_lvl === 3 ? parent.menu_cd || parent.category_cd : null) // 너 DB 룰에 맞게 서버에서 보정 추천
+      , menu_cd: (new_lvl === 3 ? (parent.menu_cd || parent.category_cd) : null)
       , p_cd: (new_lvl === 3 ? null : parent.category_cd)
+      , category_lvl: new_lvl
+      , __temp__: true
     };
 
+    //============================================================
+    // 2) 리스트에 "트리 순서로" 삽입 (부모 하위들 맨 아래)
+    //    - 부모의 마지막 자손 바로 뒤에 끼워넣음
+    //============================================================
+    set_list((prev) => {
+      const parent_idx = prev.findIndex((x) => x.tree_key === parent.tree_key);
+      if (parent_idx < 0) return [...prev, new_row];
+
+      let insert_idx = parent_idx + 1;
+
+      for (let i = parent_idx + 1; i < prev.length; i++) {
+        const r = prev[i];
+
+        // r이 parent의 자손이면 계속 내려가서 마지막 자손 뒤로
+        if (is_descendant_of(r, parent.tree_key)) {
+          insert_idx = i + 1;
+          continue;
+        }
+
+        // 자손이 아니면 여기서 끊음
+        break;
+      }
+
+      return [
+          ...prev.slice(0, insert_idx)
+        , new_row
+        , ...prev.slice(insert_idx)
+      ];
+    });
+
+    //============================================================
+    // 3) 접혀있으면 자동 펼침 (부모 + 조상까지 펼쳐서 무조건 보이게)
+    //============================================================
+    set_expanded_set((prev) => {
+      const next = new Set(prev);
+      next.add(parent.tree_key);
+      // parent가 보이려면 조상도 펼쳐져 있어야 하니까 조상도 추가
+      get_ancestors(parent.tree_key).forEach((k) => next.add(k));
+      return next;
+    });
+
+    //============================================================
+    // 4) 선택 row를 신규 row로 변경 + 디테일 NEW 오픈
+    //============================================================
+    set_temp_row_key(temp_key);
+    set_selected_row(new_row);
+
+    set_detail_open_yn(true);
+    set_grid_lock_yn(true);
     set_detail_mode("NEW");
-    set_form(next);
-    set_origin_form(next);
+
+    set_form({
+        category_cd: ""
+      , category_nm: ""
+      , sort_order: new_row.sort_order
+      , use_yn: 1
+      , menu_cd: new_row.menu_cd
+      , p_cd: new_row.p_cd
+      , category_lvl: new_lvl
+    });
+
+    set_origin_form({
+        category_cd: ""
+      , category_nm: ""
+      , sort_order: new_row.sort_order
+      , use_yn: 1
+      , menu_cd: new_row.menu_cd
+      , p_cd: new_row.p_cd
+      , category_lvl: new_lvl
+    });
+  };
+
+  const is_descendant_of = (row, ancestor_tree_key) => {
+    let p = row.p_tree_key ?? null;
+    while (p) {
+      if (p === ancestor_tree_key) return true;
+      p = parent_map.get(p) ?? null;
+    }
+    return false;
   };
 
   const on_click_save = async () => {
     try {
-      // 간단 검증
+      // 간단 검증 (기존 유지)
       if (!form.category_nm?.trim()) {
         window.alert("카테고리명은 필수입니다.");
         return false;
@@ -286,29 +379,29 @@ function Category() {
           return false;
         }
 
-        // 코드 중복 체크(저장 전)
-        const chk = await authGet(`/manage/category/checkCode?category_cd=${ encodeURIComponent(form.category_cd) }`);
-        if (chk?.data?.dup_yn === 1) {
-          window.alert("이미 존재하는 카테고리 코드입니다.");
-          return false;
-        }
-
         await authPost("/manage/category/create", form);
       } else {
         await authPut("/manage/category/update", form);
       }
 
+      // ✅ 성공 시 리로드
       await fetch_list();
 
-      // 저장 후: 다시 조회한 리스트에서 동일 key 찾아서 detail 갱신
-      // (tree_key는 서버에서 고정이니 category_cd/lvl로 다시 찾는 게 안전)
-      set_origin_form(form);
-      set_detail_mode("VIEW");
+      // ✅ 저장 완료 안내
+      window.alert("저장되었습니다.");
+
+      // ✅ NEW였으면 임시 row 키 정리
+      set_temp_row_key(null);
+
+      // ✅ 디테일 닫기(선택 해제, lock 해제까지 포함)
+      close_detail();
+
       return true;
 
     } catch (e) {
       console.error(e);
-      window.alert("저장에 실패했습니다.");
+      const msg = e?.response?.data?.message || "처리에 실패했습니다.";
+      window.alert(msg);
       return false;
     }
   };
@@ -316,33 +409,41 @@ function Category() {
   const on_click_delete = async () => {
     if (!selected_row) return;
 
-    const ok = window.confirm("삭제하시겠습니까?");
+    // 프론트 1차 차단 (UX)
+    if (has_children(selected_row.tree_key)) {
+      window.alert("하위 카테고리가 존재하여 삭제할 수 없습니다.");
+      return;
+    }
+
+    const ok = window.confirm(
+      "삭제하시겠습니까?\n\n" +
+      "※ 하위 게시글이 존재할 경우 삭제되지 않고\n" +
+      "   해당 카테고리는 '미사용' 처리됩니다."
+    );
     if (!ok) return;
 
     try {
-      // 게시글 존재 여부 확인
-      const has = await authGet(`/manage/category/${ encodeURIComponent(selected_row.category_cd) }/has-posts`);
-      const has_posts_yn = has?.data?.has_posts_yn === 1;
-
-      if (has_posts_yn) {
-        // 글 있으면 use_yn=0 처리(요구사항)
-        const ok2 = window.confirm("게시글이 존재합니다. 삭제 대신 '미사용'으로 변경할까요?");
-        if (!ok2) return;
-
-        await authPut("/manage/category/update", {
-            ...form
-          , use_yn: 0
-        });
-      } else {
-        await authDelete(`/manage/category/delete?category_cd=${ encodeURIComponent(selected_row.category_cd) }`);
-      }
+      await authDelete(
+        `/manage/category/delete?category_cd=${ encodeURIComponent(selected_row.category_cd) }`
+      );
 
       await fetch_list();
+
+      window.alert("삭제되었습니다.");   // ✅ 성공 알림
+
       close_detail();
 
     } catch (e) {
       console.error(e);
-      window.alert("삭제 처리에 실패했습니다.");
+
+      // ✅ 서버 메시지 최대한 안전하게 추출
+      const msg =
+          e?.response?.data?.message
+        || e?.response?.data
+        || e?.message
+        || "삭제할 수 없습니다.";
+
+      window.alert(msg);
     }
   };
 
@@ -359,6 +460,17 @@ function Category() {
   };
 
   const edit_able_yn = can_edit_row(selected_row);
+
+  const cancel_temp_row_if_needed = () => {
+    if (detail_mode !== "NEW" || !temp_row_key) return;
+
+    set_list(prev =>
+      prev.filter(row => row.tree_key !== temp_row_key)
+    );
+
+    set_selected_row(null);
+    set_temp_row_key(null);
+  };
   //===========================================================================
   //6.컴포넌트 return
   //===========================================================================
@@ -516,7 +628,9 @@ function Category() {
               <button
                 type="button"
                 className={ `whiteBtn ${styles.Btn}` }
-                disabled={ !can_delete_row(selected_row) }
+                disabled={ !can_delete_row(selected_row)
+                || (selected_row ? has_children(selected_row.tree_key) : false)
+                || selected_row?.__temp__ === true }
                 onClick={ on_click_delete }
               >
                 삭제
@@ -525,7 +639,9 @@ function Category() {
               <button
                 type="button"
                 className={ `whiteBtn ${styles.Btn}` }
-                disabled={ !can_create_child(selected_row) }
+                disabled={ detail_mode === "NEW"
+                || selected_row?.__temp__ === true
+                || !can_create_child(selected_row) }
                 onClick={ on_click_new }
               >
                 신규
