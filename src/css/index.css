@@ -1,7 +1,9 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: white;
+    background: radial-gradient(1200px 600px at 30% 0%, #f6f8ff 0%, rgba(246,248,255,0) 60%),
+                linear-gradient(180deg, #f7f9fc 0%, #f3f6fb 100%);
+    background-attachment: fixed;
     font-family: 'Noto Sans KR', 'NanumSquare', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 16px;
     color: #333333;
@@ -58,7 +60,7 @@ input:focus {
     margin : 0 auto;
     padding: 0;
     width: 1280px;
-    padding-top: 80px;
+    padding-top: 96px;
     padding-bottom: 20px;
     min-height: 500px;
     box-sizing: border-box;

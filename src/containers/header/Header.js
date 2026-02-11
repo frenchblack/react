@@ -113,7 +113,7 @@ function Header() {
                 <div className={ styles.home }>
                     <Link to="/"><div className={styles.home_img}></div></Link>
                 </div>
-                <div className={ styles.menuList }>
+                <div className={ `${styles.menuRail} ${styles.menuList}` }>
 
                     
                     {renderMenuList.map((menu) => ( 
@@ -135,7 +135,7 @@ function Header() {
                 </div>
                 <div className={ styles.slide } onMouseEnter={ () => { meneMouseenter("header_etc") } } onMouseLeave={ meneMouseleave } >
                 {/* <div className={ styles.slide } > */}
-                    <div className={ styles.ect }></div>
+                    <div className={styles.ectBtn} aria-label="menu"></div>
                     {_isAuthorization ? (
                         <ul style={{textAlign : "right", right: "-30px"}}
                             className={`${styles.slideItem} ${openMenuCd === "header_etc" ? styles.show : styles.hide}`}>

@@ -1,6 +1,9 @@
 .comment_div {
     /* background-color: #f2f2f2; */
     margin: 20px 0 20px 0;
+    background-color: white;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 .comment_cnt {

@@ -4,28 +4,50 @@
     }
 
     to {
-        height: 66px;
+        height: 73px;
     }
 }
 
 .h_body {
-    /* background-color: #333333; */
-    background-color: white;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    height: 66px;
-    padding: 0 40px;
     position: fixed;
     top: 0;
     left: 0;
+    width: 100%;
     box-sizing: border-box;
-    /* border-radius: 0 0 10px 10px; */
+    z-index: 1000;
+
+    /* ✅ 너가 원하는 “헤더 배경 + 패딩” 유지 */
+    background: #eef1f5;
+    padding: 8px 0px 0 40px;        /* ✅ 상단 줄 느낌 유지 */
+
+    /* ✅ 고정 높이 제거 -> 밀림 방지 */
+    height: auto;
+    /* min-height: 72px; */
+
     animation-name: move_header;
     animation-duration: 1s;
-    z-index: 2;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+    box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+}
+
+/* 상단에 은은한 하이라이트 라인(이미지 느낌) */
+.h_body::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      rgba(37,99,235,0) 0%,
+      rgba(37,99,235,0.18) 50%,
+      rgba(37,99,235,0) 100%);
+    pointer-events: none;
 }
 
 .h_body ::before {
@@ -40,16 +62,27 @@
 .h_body .menuList {
     flex-grow: 1;
     display: flex;
-    gap: 40px;
+    gap: 44px;
+    align-items: center;
+    background-color: white;
+    padding-left: 30px;
 }
 
 .h_body .home {
     margin-right: 50px;
+
+    /* ✅ 로고 뒤에 진한 배경 */
+    /* border: 1px solid rgba(15, 23, 42, 0.10); */
+    /* border-radius: 14px; */
+
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+
+    /* box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10); */
 }
 
 .home_img {
-    position: relative;
-    /* right: 0px; */
     width: 170px;
     height: 40px;
     background-image: url("/src/img/icon/home.png");
@@ -59,8 +92,23 @@
 }
 
 .h_body a {
-    /* color: white; */
-    color: black;
+    color: #1f2937;
+}
+
+.h_body .h_list h4 {
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.h_body .h_list a {
+    padding: 10px 6px;
+    border-radius: 10px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.h_body .h_list a:hover {
+    background: rgba(37, 99, 235, 0.08); /* 은은한 블루 */
+    color: #1d4ed8;
 }
 
 .h_body .slideItem a {
@@ -72,7 +120,8 @@
     position: relative;
     display: flex;
     align-items: center;
-    height: 66px;
+    height: 65px;
+    background-color: white;   
 }
 /* 
 .h_body .h_list {
@@ -85,21 +134,46 @@
     margin-right: 0;
 }
 
-.h_body .ect {
-    position: relative;
-    right: 0px;
-    width: 40px;
-    height: 40px;
-    background-image: url("/src/img/icon/menu_black.svg");
-    background-size: cover;
+/* ✅ 햄버거 버튼(절대 안 튐) */
+.ectBtn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     cursor: pointer;
+    padding-right: 40px;
+
+    /* 아이콘 색 */
+    background-color: rgba(31, 41, 55, 0.95);
+
+    /* SVG를 마스크로 써서 색을 background-color로 칠함 */
+    -webkit-mask-image: url("/src/img/icon/menu_black.svg");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: 22px 22px;
+
+    mask-image: url("/src/img/icon/menu_black.svg");
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: 26px 26px;
+
+    /* ✅ 레이어 고정 */
+    position: relative;
+    z-index: 1100;
+    
+    transition: background-color 0.18s ease, transform 0.18s ease;
 }
+
+.slide:hover .ectBtn {
+    background-color: rgba(37, 99, 235, 0.95); /* ✅ 호버 시 파란색 */
+    transform: translateY(-1px);
+}
+
 
 /* .h_body .ect:hover .slide{
     height: 66px;
 } */
 
-.h_body .ect .slide {
+/* .h_body .ect .slide {
     position: fixed;
     top: 66px;
     height: 0;
@@ -110,7 +184,7 @@
 
 .h_body .ect .slide li {
     background-color: blue;
-}
+} */
 
 /* .slideItem ::before {
     width: 200px;
@@ -119,19 +193,26 @@
 
 .slideItem {
     position: absolute;
-    width: 160px;
+    width: 180px;
     top: 100%;
+
+    /* ✅ 햄버거보다 아래 레이어 */
+    z-index: 1050;
+
     opacity: 0;
-    transform: translateY(-10px); 
-    pointer-events: none;         
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    /* background-color: #f1f1f1; */
-    background-color: white;
-    z-index: 1;
-    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.2);
+    transform: translateY(-10px);
     pointer-events: none;
-    padding : 20px;
-    border-radius: 10px;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 14px;
+
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    padding: 14px 14px;
 }
 
 /* 보여질 때 */
@@ -142,7 +223,15 @@
 }
 
 .slideItem li {
-    height: 30px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    padding: 0 10px;
+}
+
+.slideItem li:hover {
+    background: rgba(37, 99, 235, 0.08);
 }
 
 .menuSlide {
