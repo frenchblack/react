@@ -100,3 +100,75 @@
 .create {
   margin-top: 20px;
 }
+
+/* ===========================
+   썸네일 선택 팝업
+=========================== */
+.thumb_wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.thumb_title {
+  text-align: center;
+  margin: 0;
+}
+
+.thumb_panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.thumb_col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.thumb_label {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.thumb_preview {
+  width: 100%;
+  max-width: 320px;      /* 원하면 조절 */
+  aspect-ratio: 16 / 9;  /* ✅ 16:9 */
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: rgba(0,0,0,0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.thumb_preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;   /* ✅ 안 짤리게(여백 허용) */
+  display: block;
+}
+
+.thumb_no {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.thumb_btn_row {
+  display: flex;
+  flex-wrap: wrap;      /* 🔥 줄바꿈 허용 */
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.thumb_btn_row button {  
+  flex: 1 1 calc(50% - 8px);  /* 🔥 두 개씩 정렬 */
+  min-width: 120px;
+  font-size: 14px;
+  /* padding: 8px 10px; */
+  white-space: nowrap;
+}

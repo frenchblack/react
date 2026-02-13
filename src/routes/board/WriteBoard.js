@@ -21,10 +21,32 @@ function WriteBoard() {
   const paramBoard_no = searchParams.get("board_no");
   const { _isAuthorization, _setIsAuthorizationHandler } = useContext(AuthContext);
   const navigator = useNavigate();
-  const [modalIsOpen, setModalIsOpen] = useState();
   const quillRef = useRef();
   const tempUuidRef = useRef(uuidv4()); //이미지 업로드 temp폴더 명
   const isEdit = !!paramBoard_no;
+
+  //===========================================================================
+  // ✅ 썸네일 팝업 변수
+  //===========================================================================
+  // 서버가 저장해둔 현재 썸네일 URL (자동 첫이미지 or null)
+  const [thumb_current_url, set_thumb_current_url] = useState(null);
+  const [thumb_current_blob_url, set_thumb_current_blob_url] = useState(null); // 표시용 blob
+
+  // 팝업 오픈/대상 게시글
+  const [thumb_modal_open_yn, set_thumb_modal_open_yn] = useState(false);
+  const [thumb_board_no, set_thumb_board_no] = useState(null);
+
+  // 사용자 선택 후보
+  const [thumb_mode, set_thumb_mode] = useState("KEEP"); // KEEP | NONE | FILE
+  const [thumb_file, set_thumb_file] = useState(null);
+  const [thumb_file_preview, set_thumb_file_preview] = useState(null);
+
+  const thumb_file_ref = useRef(null);
+
+  const file_pick_prev_mode_ref = useRef("KEEP");
+  const file_pick_inflight_ref = useRef(false);
+
+  
 
   if (
     ReactQuill.Quill &&
@@ -32,6 +54,51 @@ function WriteBoard() {
     !ReactQuill.Quill?.imports?.['modules/imageResize']
   ) {
     ReactQuill.Quill.register('modules/imageResize', ImageResize);
+  }
+
+  //===========================================================================
+  //2.내부 함수
+  //===========================================================================
+
+  const extract_img_src_list = (html) => {
+    try {
+      const doc = new DOMParser().parseFromString(html || "", "text/html");
+      const imgs = Array.from(doc.querySelectorAll("img"));
+      return imgs
+        .map((img) => img.getAttribute("src"))
+        .filter((src) => !!src);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  const open_thumb_modal = async (board_no, thumb_url) => {
+    set_thumb_board_no(board_no);
+    set_thumb_current_url(thumb_url ?? null);
+
+    // ✅ 이전 blob URL 해제
+    if (thumb_current_blob_url) URL.revokeObjectURL(thumb_current_blob_url);
+
+    // ✅ 서버 썸네일을 한 번만 받아서 blob으로 보관
+    let blob_url = null;
+    if (thumb_url) {
+      blob_url = await build_blob_url_from_server(thumb_url);
+    }
+    set_thumb_current_blob_url(blob_url);
+
+    set_thumb_mode("KEEP");
+
+    // 파일 선택 초기화
+    if (thumb_file_preview) URL.revokeObjectURL(thumb_file_preview);
+    set_thumb_file(null);
+    set_thumb_file_preview(null);
+
+    set_thumb_modal_open_yn(true);
+  }
+
+  const go_detail = (board_no) => {
+    const upperPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
+    navigator(`${upperPath}/ViewBoard?board_no=${board_no}`);
   }
 
   const imageHandler = () => {
@@ -50,9 +117,9 @@ function WriteBoard() {
       try {
         const response = await autMultipartPatch(
           `/boadUpload/temp/${tempUuidRef.current}`
-        , formData
-        , _setIsAuthorizationHandler
-        , navigator
+          , formData
+          , _setIsAuthorizationHandler
+          , navigator
         );
 
         const imageUrl = BASE_URL + encodeURI(response.data.url); // ex: /images/temp/uuid/파일.jpg
@@ -111,14 +178,10 @@ function WriteBoard() {
   const [pCategoryList, setPCategoryList] = useState([]); // 상위 리스트 (기존 categoryList)
   const [categoryList, setCategoryList] = useState([]);   // 하위 리스트 (기존 subCategoryList)
 
-  const [insertNo, setInsertNo] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [loadFileList, setLoadFileList] = useState([]);
   const [deleteFileIds, setDeleteFileIds] = useState([]);
 
-  //===========================================================================
-  //2.내부 함수
-  //===========================================================================
   useEffect(async () => {
     chkLogin(_setIsAuthorizationHandler, navigator); //현재 클라이언트 권한이 유효한지 서버와 통신해서 확인
     if (isEdit) await loadEditData();
@@ -178,15 +241,11 @@ function WriteBoard() {
   const loadEditData = async () => {
     try {
       const result = await authGet(`/getBoradDtail?board_no=${paramBoard_no}`, _setIsAuthorizationHandler, navigator);
-      console.log("load complete");
       const data = result.data.board;
 
       setTitle(data.title);
       setContent(data.content);
 
-      // ✅ DB에서 이제 p_category_cd / category_cd 로 내려온다는 가정
-      // - p_category_cd : 상위
-      // - category_cd   : 하위(leaf)
       setPCategory(data.p_category_cd);
       setCategory(data.category_cd);
 
@@ -203,12 +262,14 @@ function WriteBoard() {
 
     try {
       const result = await authPost(`/postBoard`, formData, _setIsAuthorizationHandler, navigator);
-      if (result.data < 0) {
+
+      // ✅ 이제 result.data는 {board_no, thumb_url}
+      if (!result.data || result.data.board_no <= 0) {
         alert("새 글 등록에 실패하였습니다.");
         return;
       }
-      setInsertNo(result.data);
-      setModalIsOpen(true);
+
+      open_thumb_modal(result.data.board_no, result.data.thumb_url);
     } catch (e) {
       alert("새 글 등록에 실패하였습니다...");
     }
@@ -219,26 +280,21 @@ function WriteBoard() {
 
     try {
       const result = await authPut(`/updateBoard`, formData, _setIsAuthorizationHandler, navigator);
-      if (result.data < 0) {
-        alert("새 글 등록에 실패하였습니다.");
+
+      if (!result.data || result.data.board_no <= 0) {
+        alert("글 수정에 실패하였습니다.");
         return;
       }
-      setInsertNo(result.data);
-      setModalIsOpen(true);
-    } catch (e) {
-      alert("새 글 등록에 실패하였습니다...");
-    }
-  }
 
-  const afterComplete = () => {
-    const upperPath = pathNm.substring(0, pathNm.lastIndexOf("/"));
-    navigator(`${upperPath}/ViewBoard?board_no=${insertNo}`);
+      open_thumb_modal(result.data.board_no, result.data.thumb_url);
+    } catch (e) {
+      alert("글 수정에 실패하였습니다...");
+    }
   }
 
   const parsingFormData = () => {
     const formData = new FormData();
 
-    
     const body = {
         "title" : title
       , "content" : content
@@ -298,10 +354,6 @@ function WriteBoard() {
     getCategoryList(value);
   }
 
-  const modalOnClose = () => {
-    afterComplete();
-  }
-
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     setFileList((prev) => [...prev, ...files]);
@@ -319,6 +371,140 @@ function WriteBoard() {
     }
   }
 
+  //===========================================================================
+  // ✅ 썸네일 팝업 액션
+  //===========================================================================
+
+  const select_thumb_file = (file) => {
+    if (!file) return;
+
+    // 이전 preview revoke
+    if (thumb_file_preview) URL.revokeObjectURL(thumb_file_preview);
+
+    const preview = URL.createObjectURL(file);
+
+    set_thumb_mode("FILE");
+    set_thumb_file(file);
+    set_thumb_file_preview(preview);
+  }
+
+  const confirm_thumb = async () => {
+    if (!thumb_board_no) return;
+
+    // KEEP: 서버 자동 썸네일 유지 -> 호출 없음
+    if (thumb_mode === "KEEP") {
+      go_detail(thumb_board_no);
+      return;
+    }
+
+    // NONE: 서버에 null 처리
+    if (thumb_mode === "NONE") {
+      try {
+        await authPost(
+          `/updateThumb`
+          , { board_no: thumb_board_no }
+          , _setIsAuthorizationHandler
+          , navigator
+        );
+        go_detail(thumb_board_no);
+      } catch (e) {
+        alert("썸네일 저장에 실패했습니다.");
+      }
+      return;
+    }
+
+    // FILE: 확인 시에만 업로드
+    if (thumb_mode === "FILE") {
+      if (!thumb_file) {
+        alert("썸네일 파일을 선택해줘.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("board_no", thumb_board_no);
+      formData.append("thumb_file", thumb_file);
+
+      try {
+        await autMultipartPatch(
+          `/updateThumb`
+          , formData
+          , _setIsAuthorizationHandler
+          , navigator
+        );
+        go_detail(thumb_board_no);
+      } catch (e) {
+        alert("썸네일 업로드에 실패했습니다.");
+      }
+      return;
+    }
+  }
+
+  const to_img_src = (url) => {
+    if (!url) return null;
+
+    // 이미 절대경로면 그대로
+    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+    // 상대경로면 BASE_URL 붙여서 표시
+    if (url.startsWith("/")) return BASE_URL + url;
+
+    // 예외: "/" 없이 오면 붙여줌
+    return BASE_URL + "/" + url;
+  }
+
+  const build_blob_url_from_server = async (server_relative_url) => {
+    if (!server_relative_url) return null;
+
+    const full = server_relative_url.startsWith("http")
+      ? server_relative_url
+      : (server_relative_url.startsWith("/") ? (BASE_URL + server_relative_url) : (BASE_URL + "/" + server_relative_url));
+
+    const res = await fetch(full, { cache: "force-cache" });
+    if (!res.ok) return null;
+
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (thumb_current_blob_url) URL.revokeObjectURL(thumb_current_blob_url);
+      if (thumb_file_preview) URL.revokeObjectURL(thumb_file_preview);
+    };
+  }, []); // 🔥 dependency 제거
+
+  const open_file_picker = () => {
+    // picker 열기 직전 상태 백업
+    file_pick_prev_mode_ref.current = thumb_mode;
+    file_pick_inflight_ref.current = true;
+
+    // 같은 파일 다시 선택해도 onChange 뜨게 리셋
+    if (thumb_file_ref.current) {
+      thumb_file_ref.current.value = "";
+    }
+
+    thumb_file_ref.current?.click();
+
+    // picker 닫히면(취소 포함) 브라우저가 다시 focus를 돌려줌
+    const on_focus_back = () => {
+      window.removeEventListener("focus", on_focus_back);
+
+      // 아직 파일이 선택되지 않았다면 = 취소로 간주
+      if (file_pick_inflight_ref.current) {
+        file_pick_inflight_ref.current = false;
+
+        // ✅ 현재 썸네일(자동)도 없고, 새 파일도 없으면 NONE으로
+        if (!thumb_current_url && !thumb_current_blob_url) {
+          set_thumb_mode("NONE");
+        } else {
+          // ✅ 현재 썸네일이 있으면 원래대로(KEEP)로 복귀
+          set_thumb_mode(file_pick_prev_mode_ref.current || "KEEP");
+        }
+      }
+    };
+
+    window.addEventListener("focus", on_focus_back);
+  };
   //===========================================================================
   //4.컴포넌트 return
   //===========================================================================
@@ -402,12 +588,101 @@ function WriteBoard() {
         </div>
       </div>
 
-      <Modal isOpen={modalIsOpen}>
-        <p className={styles.modal_text}>
-          글 작성에 성공 하였습니다.
-        </p>
-        <div className={styles.modal_div}>
-          <button className={`blackBtn ${styles.madalBtn}`} onClick={modalOnClose}>확인</button>
+      {/* ========================================================================= */}
+      {/* ✅ 썸네일 선택 팝업 */}
+      {/* ========================================================================= */}
+      <Modal isOpen={thumb_modal_open_yn}>
+        <div className={styles.thumb_wrap}>
+          <p className={styles.thumb_title}>썸네일 설정</p>
+
+          <div className={styles.thumb_panel}>
+            <div className={styles.thumb_col}>
+              <div className={styles.thumb_label}>현재 썸네일(자동)</div>
+              <div className={styles.thumb_preview}>
+                {thumb_current_blob_url ? (
+                  <img src={thumb_current_blob_url} alt="" />
+                ) : (
+                  thumb_current_url ? <img src={BASE_URL + thumb_current_url} alt="" /> : <div className={styles.thumb_no}>없음</div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.thumb_col}>
+              <div className={styles.thumb_label}>선택된 썸네일</div>
+              <div className={styles.thumb_preview}>
+                {thumb_mode === "KEEP" && (
+                  thumb_current_blob_url
+                    ? <img src={thumb_current_blob_url} alt="" />
+                    : (thumb_current_url ? <img src={BASE_URL + thumb_current_url} alt="" /> : <div className={styles.thumb_no}>없음</div>)
+                )}
+
+                {thumb_mode === "NONE" && (
+                  <div className={styles.thumb_no}>없음</div>
+                )}
+
+                {thumb_mode === "FILE" && (
+                  thumb_file_preview ? <img src={thumb_file_preview} alt="" /> : <div className={styles.thumb_no}>파일 선택 필요</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <input
+            ref={thumb_file_ref}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+
+              if (!file) return; // 취소는 focus-back에서 처리
+
+              // ✅ 선택 성공이면 inflight 종료
+              file_pick_inflight_ref.current = false;
+
+              select_thumb_file(file);
+            }}
+          />
+
+          <div className={styles.thumb_btn_row}>
+            <button
+              type="button"
+              className={`${thumb_mode === "KEEP" ? "blackBtn" : "whiteBtn"}`}
+              onClick={() => set_thumb_mode("KEEP")}
+            >
+              기본 유지
+            </button>
+
+            <button
+              type="button"
+              className={`${thumb_mode === "NONE" ? "blackBtn" : "whiteBtn"}`}
+              onClick={() => {
+                set_thumb_mode("NONE");
+                // 파일 선택 초기화
+                if (thumb_file_preview) URL.revokeObjectURL(thumb_file_preview);
+                set_thumb_file(null);
+                set_thumb_file_preview(null);
+              }}
+            >
+              썸네일 없음
+            </button>
+
+            <button
+              type="button"
+              className={`${thumb_mode === "FILE" ? "blackBtn" : "whiteBtn"}`}
+              onClick={open_file_picker}
+            >
+              새 썸네일 선택
+            </button>
+
+            <button
+              type="button"
+              className="blackBtn"
+              onClick={confirm_thumb}
+            >
+              확인
+            </button>
+          </div>
         </div>
       </Modal>
     </div>
