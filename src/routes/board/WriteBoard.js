@@ -57,6 +57,28 @@ function WriteBoard() {
   }
 
   //===========================================================================
+  // ✅ 이미지 리사이즈(가로/세로) 값 유지용 attributor 등록
+  //===========================================================================
+  if (!ReactQuill.Quill?.imports?.['formats/width']) {
+    const Parchment = ReactQuill.Quill.import('parchment');
+
+    const WidthStyle = new Parchment.Attributor.Style(
+      'width'
+      , 'width'
+      , { scope: Parchment.Scope.INLINE }
+    );
+
+    const HeightStyle = new Parchment.Attributor.Style(
+      'height'
+      , 'height'
+      , { scope: Parchment.Scope.INLINE }
+    );
+
+    ReactQuill.Quill.register(WidthStyle, true);
+    ReactQuill.Quill.register(HeightStyle, true);
+  }
+
+  //===========================================================================
   //2.내부 함수
   //===========================================================================
 
@@ -162,7 +184,8 @@ function WriteBoard() {
     'bold', 'italic', 'underline', 'strike',
     'color', 'background',
     'align', 'list', 'bullet',
-    'link', 'image'
+    'link', 'image',
+    'width', 'height'
   ];
 
   const [title, setTitle] = useState("");

@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom"
 import { nonAuthGet, BASE_URL, AuthContext, getMenuCd, getMenuName, MenuContext} from "util";
+import 'react-quill/dist/quill.snow.css';
 import { Confirm, CommentList } from "components";
 import styles from "./ViewBoard.module.css";
 import { authDelete } from "util";
@@ -132,9 +133,7 @@ function sanitizeHtml(html) {
         <div className={styles.title}>
           {boardData.title}
         </div>
-        <div className={styles.content} dangerouslySetInnerHTML={{ __html: sanitizeHtml(boardData.content || "") }}>
-          {/* {boardData.content} */}
-        </div>
+        <div className={`ql-editor ${styles.content}`} dangerouslySetInnerHTML={{ __html: boardData.content }} />
       </div>
       <div className={styles.like_div}>
         {`추천 : ${boardData.like_cnt}`}
